@@ -348,7 +348,7 @@ button,select{font:inherit;color:inherit}
       <nav class="steps" id="steps" aria-label="진행 단계">
         <div class="step" data-i="1"><b class="n" data-n="01">01</b><span class="t">HRD+</span><span class="s">첫 번째 터치</span><i class="bar"></i></div>
         <div class="step" data-i="2"><b class="n" data-n="02">02</b><span class="t">PAOLA-1</span><span class="s">두 번째 터치</span><i class="bar"></i></div>
-        <div class="step" data-i="3"><b class="n" data-n="03">03</b><span class="t">11<span class="k">월</span> 1<span class="k">일</span> <span class="k">급여</span></span><span class="s">세 번째 터치</span><i class="bar"></i></div>
+        <div class="step" data-i="3"><b class="n" data-n="03">03</b><span class="t"><span class="k">급여</span></span><span class="s">세 번째 터치</span><i class="bar"></i></div>
         <p class="auto">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="#a9b8a0" stroke-width="2"/><circle cx="12" cy="12" r="4.2" fill="#9db08f"/></svg>
           <span>자동 초기화 <b id="autoNum">60</b> 초</span>
@@ -454,20 +454,17 @@ button,select{font:inherit;color:inherit}
   /* a short buzz where the device can vibrate (Android phones); iPad has no vibration motor, so nothing happens there */
   const buzz = (pattern) => { try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) { /* not supported */ } };
 
-  /* sound for iPad, which cannot vibrate. Soft bells (FM synthesis) and a warm pad in a small hall, all synthesised (no files, works offline):
-     each touch adds a note of a C-E-G-B chord, the count runs up a sparkling scale, the reveal resolves on a full Cmaj9.
-     iPad lets sound play once the screen has been touched, and its mute setting still applies. */
+  /* sound for iPad, which cannot vibrate: a crisp click per touch, a tick that climbs a scale with the count,
+     a bright glockenspiel chime and fireworks (crack, boom, crackle) on the reveal. All synthesised with Web Audio:
+     no files, works offline. iPad plays sound once the screen has been touched, and its mute setting still applies. */
   let ac = null, bus = null, noiseBuf = null, soundOn = true;
   try { soundOn = localStorage.getItem('paola-sound') !== 'off'; } catch (e) { /* storage blocked */ }
-  const N = (m) => 440 * Math.pow(2, (m - 69) / 12);          // MIDI note number -> Hz
-  const STEP_NOTES = [72, 76, 79, 83];                         // C5 E5 G5 B5: reset, touch 1, touch 2, the hold
-  const RUN = [84, 86, 88, 91, 93, 96, 98, 100, 103];          // C6 D6 E6 G6 A6 C7 D7 E7 G7: the count's rising sparkle
-  function hall(sec) {                                          // decaying stereo noise whose top end fades faster: a soft, dark room
+  const N = (m) => 440 * Math.pow(2, (m - 69) / 12);                // MIDI note number -> Hz
+  const TICKS = [81, 83, 84, 86, 88, 89, 91, 93, 95, 96];             // A5 ... C7: the count climbs a major scale
+  const rnd2 = (a, b) => a + Math.random() * (b - a);
+  function room(sec) {                                                // a small, bright room
     const len = Math.round(ac.sampleRate * sec), b = ac.createBuffer(2, len, ac.sampleRate);
-    for (let c = 0; c < 2; c++) {
-      const d = b.getChannelData(c); let lp = 0;
-      for (let i = 0; i < len; i++) { const x = i / len; lp += (Math.random() * 2 - 1 - lp) * (0.85 - 0.8 * x); d[i] = lp * Math.pow(1 - x, 2.6); }
-    }
+    for (let c = 0; c < 2; c++) { const d = b.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3.2); }
     return b;
   }
   function audio() {
@@ -478,9 +475,11 @@ button,select{font:inherit;color:inherit}
         if (!AC) return null;
         ac = new AC();
         const master = ac.createGain(), comp = ac.createDynamicsCompressor(), verb = ac.createConvolver(), wet = ac.createGain();
-        master.gain.value = 0.85; wet.gain.value = 0.34;
-        comp.threshold.value = -20; comp.knee.value = 14; comp.ratio.value = 3; comp.attack.value = 0.004; comp.release.value = 0.3;
-        verb.buffer = hall(2.4);
+        master.gain.value = 0.8; wet.gain.value = 0.16;
+        comp.threshold.value = -16; comp.knee.value = 10; comp.ratio.value = 4; comp.attack.value = 0.002; comp.release.value = 0.2;
+        verb.buffer = room(1.1);
+        noiseBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate);
+        const nd = noiseBuf.getChannelData(0); for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
         bus = ac.createGain();
         bus.connect(comp); bus.connect(verb); verb.connect(wet); wet.connect(comp); comp.connect(master); master.connect(ac.destination);
       }
@@ -489,45 +488,48 @@ button,select{font:inherit;color:inherit}
     } catch (e) { return null; }
   }
   function fade(g, t, peak, attack, dur) { g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + attack); g.gain.exponentialRampToValueAtTime(0.0001, t + dur); }
-  function bell(f, t, dur, vol, ratio, index) {                  // FM bell: bright strike, mellow tail
-    const car = ac.createOscillator(), mod = ac.createOscillator(), depth = ac.createGain(), g = ac.createGain();
-    car.frequency.value = f; mod.frequency.value = f * ratio;
-    depth.gain.setValueAtTime(f * index, t); depth.gain.exponentialRampToValueAtTime(f * 0.02 + 0.01, t + dur * 0.6);
-    fade(g, t, vol, 0.006, dur);
-    mod.connect(depth); depth.connect(car.frequency); car.connect(g); g.connect(bus);
-    car.start(t); mod.start(t); car.stop(t + dur + 0.05); mod.stop(t + dur + 0.05);
+  function out(node, x) {                                             // into the mix, panned left/right when asked
+    if (x && ac.createStereoPanner) { const s = ac.createStereoPanner(); s.pan.value = Math.max(-1, Math.min(1, x)); node.connect(s); s.connect(bus); } else node.connect(bus);
   }
-  function pad(f, t, dur, vol) {                                 // two detuned triangles through a slowly opening filter
-    const g = ac.createGain(), lp = ac.createBiquadFilter();
-    lp.type = 'lowpass'; lp.frequency.setValueAtTime(500, t); lp.frequency.exponentialRampToValueAtTime(2600, t + 0.45); lp.frequency.exponentialRampToValueAtTime(800, t + dur);
-    fade(g, t, vol, 0.09, dur);
-    for (const cents of [-7, 7]) { const o = ac.createOscillator(); o.type = 'triangle'; o.frequency.value = f; o.detune.value = cents; o.connect(lp); o.start(t); o.stop(t + dur + 0.05); }
-    lp.connect(g); g.connect(bus);
-  }
-  function boom(t, vol) {                                        // a distant, low thump
+  function osc(type, f, t, dur, vol, f2, x) {
     const o = ac.createOscillator(), g = ac.createGain();
-    o.frequency.setValueAtTime(120, t); o.frequency.exponentialRampToValueAtTime(48, t + 0.45);
-    fade(g, t, vol, 0.012, 0.75); o.connect(g); g.connect(bus); o.start(t); o.stop(t + 0.8);
+    o.type = type; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + dur);
+    fade(g, t, vol, 0.002, dur); o.connect(g); out(g, x); o.start(t); o.stop(t + dur + 0.03);
   }
-  function air(t, dur, vol) {                                    // a soft rising breath for the rockets
-    if (!noiseBuf) { noiseBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate); const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
-    const s = ac.createBufferSource(), bp = ac.createBiquadFilter(), g = ac.createGain();
-    s.buffer = noiseBuf; bp.type = 'bandpass'; bp.Q.value = 1.6; bp.frequency.setValueAtTime(500, t); bp.frequency.exponentialRampToValueAtTime(2600, t + dur);
-    fade(g, t, vol, dur * 0.6, dur); s.connect(bp); bp.connect(g); g.connect(bus); s.start(t, Math.random() * 0.5); s.stop(t + dur + 0.05);
+  function hiss(t, dur, vol, type, f, q, f2, x) {
+    const s = ac.createBufferSource(), flt = ac.createBiquadFilter(), g = ac.createGain();
+    s.buffer = noiseBuf; flt.type = type; flt.Q.value = q; flt.frequency.setValueAtTime(f, t); if (f2) flt.frequency.exponentialRampToValueAtTime(f2, t + dur);
+    fade(g, t, vol, 0.001, dur); s.connect(flt); flt.connect(g); out(g, x); s.start(t, Math.random() * 0.8); s.stop(t + dur + 0.03);
   }
-  const glitter = (t, count, vol) => { for (let i = 0; i < count; i++) bell(N(RUN[(Math.random() * RUN.length) | 0]), t + Math.random() * 0.35, 0.6, vol, 2, 0.4); };
+  function glock(f, t, dur, vol, x) {                                 // glockenspiel: fundamental plus two bright partials that die first
+    osc('sine', f, t, dur, vol, 0, x); osc('sine', f * 2.76, t, dur * 0.45, vol * 0.33, 0, x); osc('sine', f * 5.4, t, dur * 0.2, vol * 0.12, 0, x);
+  }
+  const safe = (fn) => (...a) => { try { if (audio()) fn(ac.currentTime + 0.008, ...a); } catch (e) { /* sound must never stop the screen */ } };
   const sfx = {
-    tap(i = 0) { if (!audio()) return; const t = ac.currentTime + 0.01, f = N(STEP_NOTES[i] || 72); bell(f, t, 1.1, 0.15, 2, 1.1); bell(f * 2, t, 0.4, 0.04, 3.5, 0.6); },
-    tick(k, n) { if (!audio()) return; const i = Math.min(RUN.length - 1, Math.round((n - k) * (RUN.length - 1) / Math.max(1, n - 1))); bell(N(RUN[i]), ac.currentTime + 0.005, 0.55, 0.07, 3.5, 0.8); },
-    reveal() {
-      if (!audio()) return; const t = ac.currentTime + 0.02;
-      boom(t, 0.13);
-      [48, 55, 64, 71, 74].forEach((m) => pad(N(m), t, 3.4, 0.04));                                              // C3 G3 E4 B4 D5: a warm Cmaj9
-      [84, 88, 91, 95, 98, 103].forEach((m, i) => bell(N(m), t + 0.05 + i * 0.065, 2.4, 0.085, 2, 1.3));          // bells rising to G7
-      glitter(t + 0.6, 10, 0.022);
-    },
-    pop() { if (!audio()) return; const t = ac.currentTime + 0.01; boom(t, 0.04); glitter(t + 0.05, 3, 0.02); },
-    whoosh(dur) { if (!audio()) return; air(ac.currentTime + 0.01, dur, 0.03); },
+    tap: safe((t, i = 0) => {                                         // 딸깍: a short bright transient, a tick and a little body
+      const up = 1 + (i || 0) * 0.06;
+      hiss(t, 0.012, 0.42, 'highpass', 2600, 0.7);
+      osc('sine', 2300 * up, t, 0.04, 0.15, 1650 * up); osc('triangle', 640 * up, t, 0.055, 0.11, 430 * up); osc('sine', 190, t, 0.07, 0.16, 115);
+    }),
+    tick: safe((t, k, n) => {                                         // each count step one note higher
+      const r = n > 1 ? Math.max(0, Math.min(1, (n - k) / (n - 1))) : 1, f = N(TICKS[Math.round(r * (TICKS.length - 1))]);
+      hiss(t, 0.006, 0.16, 'highpass', 4200, 0.7);
+      osc('sine', f, t, 0.08, 0.12 + 0.07 * r); osc('sine', f * 2, t, 0.035, 0.035);
+    }),
+    reveal: safe((t) => {                                             // a soft burst, then a bright chime rising, then sparkle
+      hiss(t, 0.55, 0.3, 'lowpass', 7000, 0.6, 380);
+      [84, 88, 91, 96, 100].forEach((m, i) => glock(N(m), t + 0.05 + i * 0.07, 1.7, 0.11, -0.4 + i * 0.2));
+      for (let i = 0; i < 9; i++) glock(N([96, 98, 100, 103, 105][(Math.random() * 5) | 0]), t + 0.55 + Math.random() * 1.2, 0.45, 0.025, rnd2(-0.8, 0.8));
+    }),
+    pop: safe((t) => {                                                // a firework: crack, boom, then crackle spreading left and right
+      const x = rnd2(-0.5, 0.5);
+      hiss(t, 0.02, 0.42, 'highpass', 1500, 0.7, 0, x);
+      hiss(t, 0.4, 0.32, 'lowpass', 280, 0.7, 90, x); osc('sine', 96, t, 0.32, 0.17, 50, x);
+      for (let i = 0; i < 14; i++) hiss(t + 0.14 + Math.random() * 0.75, 0.008, 0.05 + Math.random() * 0.08, 'highpass', 5200, 1, 0, x + rnd2(-0.6, 0.6));
+    }),
+    whoosh: safe((t, dur) => {                                        // a rocket going up: air plus a faint whistle
+      hiss(t, dur, 0.07, 'bandpass', 700, 1.3, 3400); osc('sine', 1100, t, dur, 0.022, 2500);
+    }),
   };
   const holdMs = () => { const n = days(); return n > 0 ? Math.max(MIN_HOLD, n * COUNT_STEP) : HOLD_MS; };
 
@@ -565,7 +567,7 @@ button,select{font:inherit;color:inherit}
     stage.style.setProperty('--charge', v.toFixed(3));
     const n = days();
     /* n, n-1 ... 1 spread evenly over the hold; the reveal fires the moment it fills, no D-DAY pause */
-    if (n > 0) showCount(Math.max(1, n - Math.floor(v * n)));
+    if (n > 0) showCount(Math.min(n, Math.max(1, n - Math.floor(v * n))));
   }
 
   let ctr = { x: 0, y: 0 };
@@ -594,7 +596,7 @@ button,select{font:inherit;color:inherit}
     sfx.tap(3);
     const step = (now) => {
       if (!holding) return;
-      p = Math.min(1, (now - t0) / dur);
+      p = Math.max(0, Math.min(1, (now - t0) / dur));
       paint(p);
       if (p >= 1) { complete(); return; }
       raf = requestAnimationFrame(step);
