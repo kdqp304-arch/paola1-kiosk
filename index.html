@@ -173,7 +173,9 @@ button,select{font:inherit;color:inherit}
 .step{grid-row:2;display:grid;grid-template-rows:auto auto auto 1fr calc(var(--u)*2.3);min-width:0;padding-top:calc(var(--u)*1.3);color:#5f716b}
 .step .n{position:relative;justify-self:start;isolation:isolate;font:italic 900 calc(var(--u)*7.8)/.84 var(--font-en);letter-spacing:-.04em;color:var(--paper);paint-order:stroke fill;-webkit-text-stroke:calc(var(--u)*.5) var(--ink);transition:color .5s}
 .step .n::before{content:attr(data-n);position:absolute;left:-.045em;top:.045em;z-index:-1;color:var(--lime);-webkit-text-stroke:0;opacity:0;transition:opacity .5s}
-.step .t{margin-top:calc(var(--u)*1.2);font-size:calc(var(--u)*3.2);font-weight:700;line-height:1.2;letter-spacing:-.015em;white-space:nowrap;transition:color .5s}
+.step .t{margin-top:calc(var(--u)*1.2);font-family:var(--font-en);font-style:italic;font-weight:900;font-size:calc(var(--u)*3.2);line-height:1.15;letter-spacing:-.02em;word-spacing:.08em;white-space:nowrap;transition:color .5s}
+/* Korean has no Montserrat glyphs: Pretendard Black, slanted at Montserrat Italic's own angle */
+.step .t .k{display:inline-block;font-family:var(--font-ko);font-style:normal;font-weight:900;letter-spacing:-.05em;transform:skewX(-11.3deg);transform-origin:50% 100%}
 .step .s{margin-top:calc(var(--u)*.7);font-size:calc(var(--u)*2.3);font-weight:500;line-height:1.3;letter-spacing:-.01em;color:var(--mute)}
 .step .bar{grid-row:5;align-self:end;display:block;position:relative;overflow:hidden;height:calc(var(--u)*.9);background:var(--rule)}
 .step .bar::after{content:"";position:absolute;inset:0;background:var(--lime);transform:scaleX(0);transform-origin:left;transition:transform .8s cubic-bezier(.2,.8,.2,1)}
@@ -192,7 +194,7 @@ button,select{font:inherit;color:inherit}
 .stage[data-o="l"] .step .bar{grid-column:1/-1;grid-row:4}
 /* landscape: each title sits beside its numeral */
 .stage[data-o="l"] .step{grid-template-columns:auto 1fr;grid-template-rows:auto auto 1fr calc(var(--u)*1.9);column-gap:calc(var(--u)*1.4);align-items:center;padding-top:calc(var(--u)*1)}
-.stage[data-o="l"] .steps{grid-template-columns:repeat(3,minmax(max-content,1fr));padding-bottom:calc(var(--u)*1.2)}
+.stage[data-o="l"] .steps{grid-template-columns:repeat(3,minmax(0,1fr));padding-bottom:calc(var(--u)*1.2)}
 .stage[data-o="l"] .auto{height:calc(var(--u)*6.4)}
 .stage[data-o="l"] .back{top:calc(var(--u)*.6)}
 .auto{grid-column:1/-1;grid-row:1;margin:0 calc(var(--u)*-6.2);padding:0 calc(var(--bw,0px) + var(--u)*5.4) 0 calc(var(--u)*6.2);height:calc(var(--u)*6.9);border-bottom:1px solid var(--rule);display:flex;align-items:center;justify-content:flex-end;gap:calc(var(--u)*1.4);font-size:calc(var(--u)*2.5);font-weight:500;letter-spacing:-.01em;line-height:1;color:#667873}
@@ -345,7 +347,7 @@ button,select{font:inherit;color:inherit}
       <nav class="steps" id="steps" aria-label="진행 단계">
         <div class="step" data-i="1"><b class="n" data-n="01">01</b><span class="t">HRD+</span><span class="s">첫 번째 터치</span><i class="bar"></i></div>
         <div class="step" data-i="2"><b class="n" data-n="02">02</b><span class="t">PAOLA-1</span><span class="s">두 번째 터치</span><i class="bar"></i></div>
-        <div class="step" data-i="3"><b class="n" data-n="03">03</b><span class="t">11월 1일 급여</span><span class="s">세 번째 터치</span><i class="bar"></i></div>
+        <div class="step" data-i="3"><b class="n" data-n="03">03</b><span class="t">11<span class="k">월</span> 1<span class="k">일</span> <span class="k">급여</span></span><span class="s">세 번째 터치</span><i class="bar"></i></div>
         <p class="auto">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="#a9b8a0" stroke-width="2"/><circle cx="12" cy="12" r="4.2" fill="#9db08f"/></svg>
           <span>자동 초기화 <b id="autoNum">60</b> 초</span>
@@ -448,6 +450,8 @@ button,select{font:inherit;color:inherit}
   };
   const days = () => Math.round((TARGET - today()) / 864e5);
   const held = () => holding || p > 0.001;
+  /* a short buzz where the device can vibrate (Android phones); iPad has no vibration motor, so nothing happens there */
+  const buzz = (pattern) => { try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) { /* not supported */ } };
   const holdMs = () => { const n = days(); return n > 0 ? Math.max(MIN_HOLD, n * COUNT_STEP) : HOLD_MS; };
 
   function setPrompt(ko, en) {
@@ -476,6 +480,7 @@ button,select{font:inherit;color:inherit}
     shown = k;
     dnum.textContent = String(k);
     dnum.classList.remove('tick'); void dnum.offsetWidth; dnum.classList.add('tick');
+    if (holding) buzz(6);
   }
 
   function paint(v) {
@@ -508,6 +513,7 @@ button,select{font:inherit;color:inherit}
     const dur = holdMs(), t0 = performance.now() - p * dur;
     stage.dataset.hold = '1';
     setPrompt('그대로 눌러주세요', 'HOLD');
+    buzz(12);
     const step = (now) => {
       if (!holding) return;
       p = Math.min(1, (now - t0) / dur);
@@ -543,7 +549,7 @@ button,select{font:inherit;color:inherit}
     stage.dataset.hold = '0';
     setState(3);
     fxShow();
-    try { if (navigator.vibrate) navigator.vibrate(40); } catch (e) { /* not supported */ }
+    buzz([35, 45, 80]);
   }
 
   /* input */
@@ -560,6 +566,7 @@ button,select{font:inherit;color:inherit}
     if (state === 2) { cancelHold(); return; }
     if (state < 2 && !cancelled && performance.now() >= lockUntil) {
       setState(state + 1);
+      buzz(18);
       lockUntil = performance.now() + 250;
     }
   }
@@ -596,6 +603,20 @@ button,select{font:inherit;color:inherit}
         wakeLock.addEventListener('release', () => { wakeLock = null; });
       }
     } catch (e) { wakeLock = null; }
+  }
+
+  /* step titles keep their size unless a column is too narrow: then only that title steps down until it fits */
+  const textW = (el) => { const r = document.createRange(); r.selectNodeContents(el); return r.getBoundingClientRect().width; };
+  function fitTitles() {
+    const land = stage.dataset.o === 'l';
+    for (const s of steps) {
+      const t = s.querySelector('.t'), n = s.querySelector('.n');
+      t.style.fontSize = '';
+      const base = parseFloat(getComputedStyle(t).fontSize);
+      /* the room beside (landscape) or under (portrait) the numeral, less the slant's overhang */
+      const room = s.clientWidth - (land ? n.offsetWidth + (parseFloat(getComputedStyle(s).columnGap) || 0) : 0) - base * 0.15;
+      for (let f = 1, i = 0; i < 14 && textW(t) > room; i++) { f *= 0.96; t.style.fontSize = (base * f).toFixed(2) + 'px'; }
+    }
   }
 
   /* keep the big date as large as the panel allows, whatever font actually loads */
@@ -650,7 +671,7 @@ button,select{font:inherit;color:inherit}
     frame.style.width = fw + 'px'; frame.style.height = fh + 'px';
     stage.dataset.o = framed ? orient : (fw >= fh ? 'l' : 'p');
     stage.style.setProperty('--u', (Math.min(fw, fh) / 100).toFixed(3) + 'px');
-    backW(); setCenter(); cropPhoto(); fitDate(); fxSize();
+    backW(); fitTitles(); setCenter(); cropPhoto(); fitDate(); fxSize();
   }
 
   /* fireworks for the reveal: one canvas over the whole stage, painted only while something is in the air */
@@ -856,7 +877,7 @@ button,select{font:inherit;color:inherit}
   photos.forEach((img) => { if (img.decode) img.decode().then(cropPhoto, () => {}); });
   if (document.fonts && document.fonts.load) {
     Promise.all(['500 20px Montserrat', '800 20px Montserrat', 'italic 900 40px Montserrat'].map((f) => document.fonts.load(f, '0123456789.')))
-      .then(() => { backW(); setCenter(); fitDate(); }, () => {});
+      .then(() => { backW(); fitTitles(); setCenter(); fitDate(); }, () => {});
   }
   setInterval(tickSecond, 1000);
 })();
