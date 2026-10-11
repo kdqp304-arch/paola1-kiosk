@@ -411,6 +411,7 @@ button,select{font:inherit;color:inherit}
       </div>
     </section>
     <p>iPad로 열면 화면 전체로 보여요. 시연 전에 이 패널은 닫아두세요.</p>
+    <p class="ver">앱 버전 15 · 빌드 11216566</p>
   </aside>
 </main>
 <script>
@@ -977,9 +978,25 @@ button,select{font:inherit;color:inherit}
   var tools = function () { document.documentElement.classList.toggle('dev', location.hash === '#tools'); };
   tools(); addEventListener('hashchange', tools);
   var local = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-  if ('serviceWorker' in navigator && (location.protocol === 'https:' || local)) {
-    addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+  if (!('serviceWorker' in navigator) || !(location.protocol === 'https:' || local)) return;
+  var sw = navigator.serviceWorker, had = !!sw.controller, reloading = false;
+  /* a new version took over: reload on the start screen, never in the middle of a touch sequence */
+  function reloadWhenIdle() {
+    if (reloading) return;
+    var st = document.getElementById('stage');
+    var idle = document.hidden || !st || (st.getAttribute('data-state') === '0' && st.getAttribute('data-hold') !== '1');
+    if (idle) { reloading = true; location.reload(); } else setTimeout(reloadWhenIdle, 1500);
   }
+  sw.addEventListener('controllerchange', function () { if (had) reloadWhenIdle(); had = true; });
+  addEventListener('load', function () {
+    sw.register('sw.js').then(function (reg) {
+      /* iPad keeps a home-screen app suspended instead of reopening it, so look for a new version whenever it comes back */
+      var last = Date.now();
+      var check = function () { last = Date.now(); reg.update().catch(function () {}); };
+      document.addEventListener('visibilitychange', function () { if (!document.hidden && Date.now() - last > 60000) check(); });
+      setInterval(check, 30 * 60 * 1000);
+    }).catch(function () {});
+  });
 })();
 </script>
 </body>
