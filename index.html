@@ -185,8 +185,6 @@ button,select{font:inherit;color:inherit}
 .dd i{font-style:normal;color:var(--glow)}
 .dd b{font-weight:800}
 .dd b.tick{animation:tick .06s ease-out}
-.dd.day{font-size:calc(var(--u)*20)}
-.dd.day b{color:var(--glow);text-shadow:0 0 calc(var(--u)*3.5) rgba(212,251,106,.95),0 0 calc(var(--u)*8) rgba(212,251,106,.55),0 calc(var(--u)*.4) calc(var(--u)*2) rgba(0,0,0,.5);animation:daypop .42s cubic-bezier(.2,.9,.3,1.25) both,daybeat .8s ease-in-out .42s infinite}
 .dl{margin-top:calc(var(--u)*1.6);font-family:var(--font-ko);font-size:calc(var(--u)*4.2);font-weight:700;letter-spacing:.02em;color:#fff;text-shadow:0 1px calc(var(--u)*1.6) rgba(0,0,0,.55)}
 .stage[data-hold="1"][data-count="1"] .dcount{opacity:1;transform:none}
 
@@ -247,8 +245,6 @@ button,select{font:inherit;color:inherit}
 @keyframes halo{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:1;transform:scale(1.045)}}
 @keyframes rise{from{opacity:0;transform:translateY(calc(var(--u)*1.2))}to{opacity:1;transform:none}}
 @keyframes tick{0%{transform:scale(.9)}100%{transform:scale(1)}}
-@keyframes daypop{0%{transform:scale(.5);opacity:.15}55%{transform:scale(1.14);opacity:1}100%{transform:scale(1);opacity:1}}
-@keyframes daybeat{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
 @keyframes beat{0%,100%{transform:scaleX(.16);opacity:.35}50%{transform:scaleX(.46);opacity:1}}
 @keyframes echo{0%,100%{opacity:.08}50%{opacity:1}}
 @keyframes land{
@@ -269,7 +265,7 @@ button,select{font:inherit;color:inherit}
   .stage .date span,.stage .l-sub,.stage .ln,.stage .chip{animation-duration:.01s!important;animation-delay:0s!important}
   .rays,.stage .date span::before{animation:none!important}
   .sp,.fx{display:none}
-  .dd b.tick,.dd.day b{animation:none}
+  .dd b.tick{animation:none}
   .hand,.disc,.p-ko,.p-en{animation:none}
   .p-ko.in,.p-en.in{animation:rise .01s both}
 }
@@ -396,15 +392,16 @@ button,select{font:inherit;color:inherit}
   const prog = $('#prog'), dnum = $('#dnum'), ringwrap = $('#ringwrap'), flash = $('#flash');
   const autoNum = $('#autoNum'), chipB = $('#chipB'), backBtn = $('#backBtn');
   const lightEl = $('#light'), touchEl = $('#touch');
-  const dd = $('#dd'), dl = $('#dl'), legalEl = $('.legal');
+  const legalEl = $('.legal');
   const steps = [...document.querySelectorAll('.step')];
   const photos = [...document.querySelectorAll('.ph')];
 
-  const HOLD_MS = 2200;                    // how long the third touch must be held
+  const HOLD_MS = 2200;                    // how long the third touch is held when there is no countdown (from 11/1)
   const RESET_S = 60;                      // idle seconds before the screen resets
   const TARGET = new Date(2026, 10, 1);    // 11월 1일 급여
   const BASE = new Date(2026, 9, 23);      // the screen counts as 10/23 (D-9) until the real date gets there
-  const COUNT_STEP = 65;                   // ms each D-number stays up while the third touch charges
+  const COUNT_STEP = 65;                   // ms per D-number while the third touch charges; the reveal fires right after D-1
+  const MIN_HOLD = 600;                    // shortest hold, so a quick tap never fires the reveal
   const PHOTO_DREAM = 912;                 // row of the photo where the baked "DREAM" ends
   const PHOTO_W = 1240, PHOTO_H = 1269, PHOTO_TOP = 281;   // photo size, and the photo row where the original design's crop began
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -424,6 +421,7 @@ button,select{font:inherit;color:inherit}
   };
   const days = () => Math.round((TARGET - today()) / 864e5);
   const held = () => holding || p > 0.001;
+  const holdMs = () => { const n = days(); return n > 0 ? Math.max(MIN_HOLD, n * COUNT_STEP) : HOLD_MS; };
 
   function setPrompt(ko, en) {
     if (pko.textContent === ko && pen.textContent === en) return;
@@ -444,24 +442,21 @@ button,select{font:inherit;color:inherit}
   }
   const setState = (n) => { state = n; render(); };
 
-  /* the big D-number: k days left, or 0 = D-DAY */
+  /* the big D-number while the third touch charges */
   let shown = -1;
   function showCount(k) {
     if (k === shown) return;
     shown = k;
-    dnum.textContent = k > 0 ? String(k) : 'DAY';
-    dd.classList.toggle('day', k <= 0);
-    dl.textContent = k > 0 ? '11월 1일 급여까지' : '11월 1일 급여';
-    dnum.classList.remove('tick');
-    if (k > 0) { void dnum.offsetWidth; dnum.classList.add('tick'); }
+    dnum.textContent = String(k);
+    dnum.classList.remove('tick'); void dnum.offsetWidth; dnum.classList.add('tick');
   }
 
   function paint(v) {
     prog.style.strokeDashoffset = String(100 * (1 - v));
     stage.style.setProperty('--charge', v.toFixed(3));
     const n = days();
-    /* one number per COUNT_STEP ms: n, n-1 ... 1, then D-DAY while the hold finishes charging */
-    if (n > 0) showCount(Math.max(0, n - Math.floor(v * HOLD_MS / COUNT_STEP)));
+    /* n, n-1 ... 1 spread evenly over the hold; the reveal fires the moment it fills, no D-DAY pause */
+    if (n > 0) showCount(Math.max(1, n - Math.floor(v * n)));
   }
 
   let ctr = { x: 0, y: 0 };
@@ -483,12 +478,12 @@ button,select{font:inherit;color:inherit}
     if (holding) return;
     holding = true; cancelAnimationFrame(raf); clearTimeout(hintT);
     setCenter();
-    const t0 = performance.now() - p * HOLD_MS;
+    const dur = holdMs(), t0 = performance.now() - p * dur;
     stage.dataset.hold = '1';
     setPrompt('그대로 눌러주세요', 'HOLD');
     const step = (now) => {
       if (!holding) return;
-      p = Math.min(1, (now - t0) / HOLD_MS);
+      p = Math.min(1, (now - t0) / dur);
       paint(p);
       if (p >= 1) { complete(); return; }
       raf = requestAnimationFrame(step);
@@ -501,9 +496,10 @@ button,select{font:inherit;color:inherit}
     holding = false; cancelAnimationFrame(raf);
     setPrompt('끝까지 눌러주세요', 'KEEP HOLDING');
     let last = performance.now();
+    const dur = holdMs();
     const back = (now) => {
       if (holding) return;
-      p = Math.max(0, p - (now - last) / (HOLD_MS * 0.35)); last = now;
+      p = Math.max(0, p - (now - last) / (dur * 0.35)); last = now;
       paint(p);
       if (p > 0) raf = requestAnimationFrame(back);
       else { stage.dataset.hold = '0'; hintT = setTimeout(render, 1600); }
