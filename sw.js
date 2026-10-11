@@ -1,5 +1,5 @@
 /* PAOLA-1 touch screen: keeps the page, icons and web fonts on the device so it opens without a connection. */
-const CACHE = 'paola1-9ce0a0ee';
+const CACHE = 'paola1-bede6c6b';
 const CORE = ['./', 'index.html', 'manifest.webmanifest', 'icon-180.png', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'p1.jpg', 'p2.jpg', 'p3.jpg', 'p4.jpg', 'pretendard-subset.woff2'];
 const FONT_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com'];
 

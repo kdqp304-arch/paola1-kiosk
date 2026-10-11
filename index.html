@@ -180,6 +180,10 @@ button,select{font:inherit;color:inherit}
 .step.on .n,.step.on .t{color:var(--ink)}
 .step.on .n::before{opacity:1}
 .step.on .bar::after{transform:scaleX(1)}
+/* the bar of the step to touch next sweeps back and forth: step 1 on the first screen, then 2, then 3; faster while the third touch is held */
+.stage[data-state="0"] .step[data-i="1"] .bar::after,.stage[data-state="1"] .step[data-i="2"] .bar::after,.stage[data-state="2"] .step[data-i="3"] .bar::after{background:linear-gradient(90deg,rgba(174,210,0,0),var(--lime) 18%,#efff96 50%,var(--lime) 82%,rgba(174,210,0,0));animation:pingpong 1s cubic-bezier(.45,0,.55,1) infinite alternate}
+.stage[data-state="0"] .step[data-i="1"] .bar,.stage[data-state="1"] .step[data-i="2"] .bar,.stage[data-state="2"] .step[data-i="3"] .bar{background:#e2e9d6;height:calc(var(--u)*1.2)}
+.stage[data-hold="1"] .step[data-i="3"] .bar::after{animation-duration:.5s}
 .stage[data-state="3"] .step[data-i="3"] .t{justify-self:start;background:linear-gradient(transparent 60%,var(--lime) 60% 92%,transparent 92%)}
 .stage[data-state="3"] .step[data-i="3"] .bar{height:calc(var(--u)*1.3)}
 .stage[data-o="l"] .step .n{grid-column:1;grid-row:1;font-size:calc(var(--u)*6.2)}
@@ -268,6 +272,7 @@ button,select{font:inherit;color:inherit}
 @keyframes halo{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:1;transform:scale(1.045)}}
 @keyframes rise{from{opacity:0;transform:translateY(calc(var(--u)*1.2))}to{opacity:1;transform:none}}
 @keyframes tick{0%{transform:scale(.9)}100%{transform:scale(1)}}
+@keyframes pingpong{0%{transform:translateX(-16%) scaleX(.38);opacity:.7}50%{opacity:1}100%{transform:translateX(78%) scaleX(.38);opacity:.7}}
 @keyframes land{
   0%{opacity:0;transform:translateY(-34%) scale(1.7) rotate(-5deg);filter:blur(26px);animation-timing-function:cubic-bezier(.2,.9,.25,1)}
   46%{opacity:1;transform:translateY(3%) scale(.93) rotate(1.2deg);filter:blur(0);animation-timing-function:ease-in-out}
@@ -281,6 +286,7 @@ button,select{font:inherit;color:inherit}
 @keyframes flash{0%{opacity:0;transform:scale(.7)}9%{opacity:1;transform:scale(1.1)}30%{opacity:.95}100%{opacity:0;transform:scale(1.7)}}
 @media (prefers-reduced-motion:reduce){
   .halo{animation:none!important}
+  .stage[data-state="0"] .step[data-i="1"] .bar::after,.stage[data-state="1"] .step[data-i="2"] .bar::after,.stage[data-state="2"] .step[data-i="3"] .bar::after{animation:none;transform:scaleX(.34)}
   .flash.go{animation:none}
   .light,.ph{transition-duration:.01s!important}
   .stage .date span,.stage .l-sub,.stage .ln,.stage .chip{animation-duration:.01s!important;animation-delay:0s!important}
