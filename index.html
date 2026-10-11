@@ -173,9 +173,9 @@ button,select{font:inherit;color:inherit}
 .step{grid-row:2;display:grid;grid-template-rows:auto auto auto 1fr calc(var(--u)*2.3);min-width:0;padding-top:calc(var(--u)*1.3);color:#5f716b}
 .step .n{position:relative;justify-self:start;isolation:isolate;font:italic 900 calc(var(--u)*7.8)/.84 var(--font-en);letter-spacing:-.04em;color:var(--paper);paint-order:stroke fill;-webkit-text-stroke:calc(var(--u)*.5) var(--ink);transition:color .5s}
 .step .n::before{content:attr(data-n);position:absolute;left:-.045em;top:.045em;z-index:-1;color:var(--lime);-webkit-text-stroke:0;opacity:0;transition:opacity .5s}
-.step .t{margin-top:calc(var(--u)*1.2);font-family:var(--font-en);font-style:italic;font-weight:900;font-size:calc(var(--u)*3.2);line-height:1.15;letter-spacing:-.02em;word-spacing:.08em;white-space:nowrap;transition:color .5s}
+.step .t{margin-top:calc(var(--u)*1.2);font-family:var(--font-en);font-style:italic;font-weight:900;font-size:calc(var(--u)*3.2);line-height:1.15;letter-spacing:.035em;word-spacing:.06em;white-space:nowrap;color:var(--paper);paint-order:stroke fill;-webkit-text-stroke:calc(var(--u)*.34) var(--ink);transition:color .5s}
 /* Korean has no Montserrat glyphs: Pretendard Black, slanted at Montserrat Italic's own angle */
-.step .t .k{display:inline-block;font-family:var(--font-ko);font-style:normal;font-weight:900;letter-spacing:-.05em;transform:skewX(-11.3deg);transform-origin:50% 100%}
+.step .t .k{display:inline-block;font-family:var(--font-ko);font-style:normal;font-weight:900;letter-spacing:.02em;transform:skewX(-11.3deg);transform-origin:50% 100%}
 .step .s{margin-top:calc(var(--u)*.7);font-size:calc(var(--u)*2.3);font-weight:500;line-height:1.3;letter-spacing:-.01em;color:var(--mute)}
 .step .bar{grid-row:5;align-self:end;display:block;position:relative;overflow:hidden;height:calc(var(--u)*.9);background:var(--rule)}
 .step .bar::after{content:"";position:absolute;inset:0;background:var(--lime);transform:scaleX(0);transform-origin:left;transition:transform .8s cubic-bezier(.2,.8,.2,1)}
@@ -189,12 +189,14 @@ button,select{font:inherit;color:inherit}
 .stage[data-state="3"] .step[data-i="3"] .t{justify-self:start;background:linear-gradient(transparent 60%,var(--lime) 60% 92%,transparent 92%)}
 .stage[data-state="3"] .step[data-i="3"] .bar{height:calc(var(--u)*1.3)}
 .stage[data-o="l"] .step .n{grid-column:1;grid-row:1;font-size:calc(var(--u)*6.2)}
-.stage[data-o="l"] .step .t{grid-column:2;grid-row:1;margin-top:0;font-size:calc(var(--u)*4.2)}
+.stage[data-o="l"] .step .t{grid-column:2;grid-row:1;margin-top:0;font-size:calc(var(--u)*4.2);-webkit-text-stroke-width:calc(var(--u)*.42)}
 .stage[data-o="l"] .step .s{grid-column:1/-1;grid-row:2;margin-top:calc(var(--u)*.9);font-size:calc(var(--u)*2.1)}
 .stage[data-o="l"] .step .bar{grid-column:1/-1;grid-row:4}
 /* landscape: each title sits beside its numeral */
 .stage[data-o="l"] .step{grid-template-columns:auto 1fr;grid-template-rows:auto auto 1fr calc(var(--u)*1.9);column-gap:calc(var(--u)*1.4);align-items:center;padding-top:calc(var(--u)*1)}
 .stage[data-o="l"] .steps{grid-template-columns:repeat(3,minmax(0,1fr));padding-bottom:calc(var(--u)*1.2)}
+/* once a step is lit its title fills with navy; a thinner outline keeps the filled letters crisp */
+.stage .step.on .t{-webkit-text-stroke-width:calc(var(--u)*.12)}
 .stage[data-o="l"] .auto{height:calc(var(--u)*6.4)}
 .stage[data-o="l"] .back{top:calc(var(--u)*.6)}
 .auto{grid-column:1/-1;grid-row:1;margin:0 calc(var(--u)*-6.2);padding:0 calc(var(--bw,0px) + var(--u)*5.4) 0 calc(var(--u)*6.2);height:calc(var(--u)*6.9);border-bottom:1px solid var(--rule);display:flex;align-items:center;justify-content:flex-end;gap:calc(var(--u)*1.4);font-size:calc(var(--u)*2.5);font-weight:500;letter-spacing:-.01em;line-height:1;color:#667873}
@@ -210,7 +212,6 @@ button,select{font:inherit;color:inherit}
 .dd i{font-style:normal;color:var(--glow)}
 .dd b{font-weight:800}
 .dd b.tick{animation:tick .06s ease-out}
-.dl{margin-top:calc(var(--u)*1.6);font-family:var(--font-ko);font-size:calc(var(--u)*4.2);font-weight:600;letter-spacing:-.01em;color:#fff;text-shadow:0 1px calc(var(--u)*1.6) rgba(0,0,0,.55)}
 .stage[data-hold="1"][data-count="1"] .dcount{opacity:1;transform:none}
 
 /* E. the third light: a bright panel that spreads from the ring over the touch band */
@@ -367,7 +368,6 @@ button,select{font:inherit;color:inherit}
 
       <div class="dcount" aria-hidden="true">
         <p class="dd" id="dd"><i>D-</i><b id="dnum">9</b></p>
-        <p class="dl" id="dl">11월 1일 급여까지</p>
       </div>
       <div class="flash" id="flash" aria-hidden="true"></div>
       <canvas class="fx" id="fx" aria-hidden="true"></canvas>
@@ -407,6 +407,7 @@ button,select{font:inherit;color:inherit}
       <div class="row">
         <button class="tb" id="tFrame" type="button" aria-pressed="true">기기 프레임</button>
         <button class="tb" id="tOrient" type="button" aria-pressed="false">가로로 보기</button>
+        <button class="tb" id="tSound" type="button" aria-pressed="true">소리</button>
       </div>
     </section>
     <p>iPad로 열면 화면 전체로 보여요. 시연 전에 이 패널은 닫아두세요.</p>
@@ -452,6 +453,50 @@ button,select{font:inherit;color:inherit}
   const held = () => holding || p > 0.001;
   /* a short buzz where the device can vibrate (Android phones); iPad has no vibration motor, so nothing happens there */
   const buzz = (pattern) => { try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) { /* not supported */ } };
+
+  /* sound for iPad, which cannot vibrate: a click per touch, a rising tick per count step, a chime and fireworks on the reveal.
+     Synthesised with Web Audio (no files, works offline); iPad lets it play once the screen has been touched, and its mute setting still applies. */
+  let ac = null, master = null, noiseBuf = null, soundOn = true;
+  try { soundOn = localStorage.getItem('paola-sound') !== 'off'; } catch (e) { /* storage blocked */ }
+  function audio() {
+    if (!soundOn) return null;
+    try {
+      if (!ac) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return null;
+        ac = new AC(); master = ac.createGain(); master.gain.value = 0.55; master.connect(ac.destination);
+      }
+      if (ac.state === 'suspended') ac.resume().catch(() => {});
+      return ac;
+    } catch (e) { return null; }
+  }
+  function env(g, t, peak, dur) { g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t + dur); }
+  function tone(f, t, dur, type, vol, f2) {
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + dur);
+    env(g, t, vol, dur); o.connect(g); g.connect(master); o.start(t); o.stop(t + dur + 0.03);
+  }
+  function noise(t, dur, vol, freq, q, f2) {
+    if (!noiseBuf) { noiseBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate); const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
+    const s = ac.createBufferSource(), bp = ac.createBiquadFilter(), g = ac.createGain();
+    s.buffer = noiseBuf; bp.type = 'bandpass'; bp.Q.value = q; bp.frequency.setValueAtTime(freq, t); if (f2) bp.frequency.exponentialRampToValueAtTime(f2, t + dur);
+    env(g, t, vol, dur); s.connect(bp); bp.connect(g); g.connect(master); s.start(t, Math.random() * 0.5); s.stop(t + dur + 0.03);
+  }
+  const sfx = {
+    tap() { if (!audio()) return; const t = ac.currentTime + 0.005; noise(t, 0.03, 0.35, 3800, 0.9); tone(1250, t, 0.07, 'triangle', 0.2, 780); tone(160, t, 0.09, 'sine', 0.28, 90); },
+    tick(k, n) { if (!audio()) return; const r = n > 1 ? (n - k) / (n - 1) : 1, t = ac.currentTime + 0.002; tone(700 + 760 * r, t, 0.05, 'triangle', 0.15 + 0.1 * r); },
+    reveal() {
+      if (!audio()) return; const t = ac.currentTime + 0.01;
+      noise(t, 0.55, 0.45, 2600, 0.7, 450);
+      [1046.5, 1318.5, 1568, 2093].forEach((f, i) => { tone(f, t + 0.06 + i * 0.07, 1.5, 'sine', 0.13); tone(f * 2, t + 0.06 + i * 0.07, 0.6, 'triangle', 0.03); });
+    },
+    pop() {
+      if (!audio()) return; const t = ac.currentTime + 0.005;
+      noise(t, 0.2, 0.42, 900, 0.8, 170); tone(110, t, 0.18, 'sine', 0.28, 55);
+      for (let i = 0; i < 8; i++) noise(t + 0.08 + Math.random() * 0.45, 0.02, 0.1 + Math.random() * 0.1, 5000 + Math.random() * 3000, 2);
+    },
+    whoosh(dur) { if (!audio()) return; noise(ac.currentTime + 0.005, dur, 0.1, 600, 1.4, 3200); },
+  };
   const holdMs = () => { const n = days(); return n > 0 ? Math.max(MIN_HOLD, n * COUNT_STEP) : HOLD_MS; };
 
   function setPrompt(ko, en) {
@@ -480,7 +525,7 @@ button,select{font:inherit;color:inherit}
     shown = k;
     dnum.textContent = String(k);
     dnum.classList.remove('tick'); void dnum.offsetWidth; dnum.classList.add('tick');
-    if (holding) buzz(6);
+    if (holding) { buzz(6); sfx.tick(k, days()); }
   }
 
   function paint(v) {
@@ -514,6 +559,7 @@ button,select{font:inherit;color:inherit}
     stage.dataset.hold = '1';
     setPrompt('그대로 눌러주세요', 'HOLD');
     buzz(12);
+    sfx.tap();
     const step = (now) => {
       if (!holding) return;
       p = Math.min(1, (now - t0) / dur);
@@ -550,6 +596,7 @@ button,select{font:inherit;color:inherit}
     setState(3);
     fxShow();
     buzz([35, 45, 80]);
+    sfx.reveal();
   }
 
   /* input */
@@ -567,6 +614,7 @@ button,select{font:inherit;color:inherit}
     if (state < 2 && !cancelled && performance.now() >= lockUntil) {
       setState(state + 1);
       buzz(18);
+      sfx.tap();
       lockUntil = performance.now() + 250;
     }
   }
@@ -688,7 +736,7 @@ button,select{font:inherit;color:inherit}
   ];
   const CONF = ['#034a68', '#aed200', '#d4fb6a', '#ffb400', '#ff3d81', '#0a8fb0', '#6b4cff', '#ffffff'];
   const TRAIL = ['#ffb400', '#ff7a1a', '#ffd35c'];
-  let FW = 0, FH = 0, UN = 1, DPR = 1, parts = [], fxTimers = [], fxRaf = 0, fxLast = 0, fxBusy = false;
+  let FW = 0, FH = 0, UN = 1, DPR = 1, parts = [], fxTimers = [], fxRaf = 0, fxLast = 0, fxBusy = false, fxLoud = false;   // fxLoud: the opening salvo has sound, the calm idle fireworks do not
 
   function fxSize() {
     FW = stage.clientWidth; FH = stage.clientHeight; UN = Math.min(FW, FH) / 100;
@@ -708,6 +756,7 @@ button,select{font:inherit;color:inherit}
 
   /* a shell bursting: bright streaks in a ring plus twinkling four-point glitter */
   function burst(x, y, n, pal, power) {
+    if (fxLoud) sfx.pop();
     const V = UN * 52 * power, base = rnd(0, TAU);
     for (let i = 0; i < n; i++) {
       const a = base + (i / n) * TAU + rnd(-.09, .09);
@@ -723,6 +772,7 @@ button,select{font:inherit;color:inherit}
   /* a rocket climbs and stops exactly at its target: y(t) = y0 + v0*t + a*t^2/2 with v0 = -2d/T and a = 2d/T^2 */
   function rocket(x, ty, power, n) {
     const y0 = FH + UN * 2, d = Math.max(UN * 20, y0 - ty), T = rnd(.55, .8);
+    if (fxLoud) sfx.whoosh(T);
     add({ k: 3, x0: x, y0, x, y: y0, vx: rnd(-5, 5) * UN, vy0: -2 * d / T, ay: 2 * d / (T * T), T, power, n, pal: pick(PAL) });
   }
 
@@ -814,7 +864,7 @@ button,select{font:inherit;color:inherit}
 
   function fxShow() {
     if (reduce) return;
-    fxClear(); fxSize(); fx.hidden = false;
+    fxClear(); fxSize(); fx.hidden = false; fxLoud = true;
     const at = (ms, fn) => fxTimers.push(setTimeout(fn, ms));
     const dateAt = () => { const d = $('.date').getBoundingClientRect(), s = stage.getBoundingClientRect(); return { x: d.left + d.width / 2 - s.left, y: d.top + d.height / 2 - s.top }; };
     burst(ctr.x, ctr.y, 130, PAL.flat(), 1.6);                        // from the ring, with the flash
@@ -822,10 +872,11 @@ button,select{font:inherit;color:inherit}
     for (let i = 0; i < 18; i++) at(260 + i * 140, rain);              // confetti rain, ~2.5 s
     at(330, () => { const c = dateAt(); burst(c.x, c.y, 120, PAL.flat(), 1.4); });   // the date itself goes off
     for (let i = 0; i < 7; i++) at(380 + i * 470 + rnd(-90, 90), () => rocket(FW * (i % 2 ? rnd(.58, .9) : rnd(.1, .42)), FH * rnd(.1, .55), 1.15, 90));
-    at(4300, idle);
+    at(4300, () => { fxLoud = false; idle(); });
   }
 
   function fxClear() {
+    fxLoud = false;
     fxTimers.forEach(clearTimeout); fxTimers = [];
     cancelAnimationFrame(fxRaf); fxRaf = 0; fxBusy = false; parts = [];
     fx.width = fx.width;                 // drop the whole bitmap: a plain clearRect can be lost when the canvas is hidden right after
@@ -854,6 +905,10 @@ button,select{font:inherit;color:inherit}
   });
   tFrame.addEventListener('click', () => { app.classList.toggle('framed'); syncTools(); layout(); });
   tOrient.addEventListener('click', () => { orient = orient === 'p' ? 'l' : 'p'; syncTools(); layout(); });
+  const tSound = $('#tSound');
+  const syncSound = () => tSound.setAttribute('aria-pressed', String(soundOn));
+  tSound.addEventListener('click', () => { soundOn = !soundOn; try { localStorage.setItem('paola-sound', soundOn ? 'on' : 'off'); } catch (e) { /* storage blocked */ } syncSound(); sfx.tap(); });
+  syncSound();
 
   stage.addEventListener('pointerdown', (e) => { if (e.button > 0) return; press(e.pointerId); });
   addEventListener('pointerup', (e) => release(e.pointerId, false));
@@ -861,7 +916,7 @@ button,select{font:inherit;color:inherit}
   stage.addEventListener('contextmenu', (e) => e.preventDefault());
   /* reset button: its own tap, never counted as a touch on the stage */
   backBtn.addEventListener('pointerdown', (e) => e.stopPropagation());
-  backBtn.addEventListener('click', () => { reset(); backBtn.blur(); });
+  backBtn.addEventListener('click', () => { sfx.tap(); reset(); backBtn.blur(); });
   addEventListener('keydown', (e) => {
     if ((e.key === ' ' || e.key === 'Enter') && !e.repeat && !(e.target.closest && e.target.closest('button,select,.tools'))) {
       e.preventDefault(); press('k');
