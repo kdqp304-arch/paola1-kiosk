@@ -204,7 +204,7 @@ button,select{font:inherit;color:inherit}
 .auto b{font-weight:600;font-variant-numeric:tabular-nums}
 .stage[data-state="0"] .auto{visibility:hidden}
 
-/* D-day countdown in the last third of the hold: centred on the whole screen */
+/* D-day countdown once the three bars are full: centred on the whole screen */
 .dcount{position:absolute;inset:0;z-index:4;pointer-events:none;display:grid;place-content:center;justify-items:center;text-align:center;opacity:0;transform:scale(.94);transition:opacity .2s,transform .3s cubic-bezier(.2,.8,.2,1);font-family:var(--font-en)}
 .dcount::before{content:"";position:absolute;inset:0;background:radial-gradient(70% calc(var(--u)*25) at 50% 50%,rgba(1,32,50,.88),rgba(1,32,50,.62) 55%,rgba(1,32,50,0) 100%)}
 .dcount>*{position:relative;margin:0}
@@ -413,7 +413,7 @@ button,select{font:inherit;color:inherit}
       </div>
     </section>
     <p>iPad로 열면 화면 전체로 보여요. 시연 전에 이 패널은 닫아두세요.</p>
-    <p class="ver">앱 버전 17 · 빌드 3a05b398</p>
+    <p class="ver">앱 버전 18 · 빌드 0017cdee</p>
   </aside>
 </main>
 <script>
@@ -429,7 +429,9 @@ button,select{font:inherit;color:inherit}
   const steps = [...document.querySelectorAll('.step')];
   const photos = [...document.querySelectorAll('.ph')];
 
-  const HOLD_MS = 2000;                    // one press and hold lights the three steps in turn, then the reveal
+  const HOLD_MS = 2400;                    // press and hold until the three bars are full (0.8 s each)
+  const COUNT_STEP = 65;                   // then the days count down by themselves: ms per D-number
+  const MIN_COUNT = 600;                   // the count takes at least this long, even at D-1
   const RESET_S = 10;                      // seconds the reveal stays up before the screen resets by itself
   const TARGET = new Date(2026, 10, 1);    // 11월 1일 급여
   const BASE = new Date(2026, 9, 23);      // the screen counts as 10/23 (D-9) until the real date gets there
@@ -439,7 +441,7 @@ button,select{font:inherit;color:inherit}
 
   const COPY = { s: '세 개의 빛을 켜보세요.', ko: '꾹 눌러주세요', en: 'PRESS & HOLD' };
 
-  let state = 0, sim = null, p = 0, holding = false, down = null, raf = 0, lockUntil = 0, lit = 0;
+  let state = 0, sim = null, p = 0, holding = false, counting = false, down = null, raf = 0, lockUntil = 0, lit = 0;
   let hintT = 0, left = RESET_S, orient = 'p', wakeLock = null;
 
   const today = () => {
@@ -546,11 +548,11 @@ button,select{font:inherit;color:inherit}
   }
 
   /* the screen is a pure function of state (0 waiting, 3 revealed) and of how far the hold has got */
-  const litAt = (v) => (v >= 1 ? 3 : Math.min(2, Math.floor(v * 3 + 1e-6)));   // one light per third of the hold; the third comes with the reveal
+  const litAt = (v) => Math.min(3, Math.floor(v * 3 + 1e-6));   // a light for each full bar
   function showLit(n) {
     lit = n;
     steps.forEach((el, i) => el.classList.toggle('on', i < n));
-    photos.forEach((el, i) => el.classList.toggle('on', i === n));
+    photos.forEach((el, i) => el.classList.toggle('on', i === (state === 3 ? 3 : Math.min(n, 2))));   // the last photo comes with the reveal
   }
   function render() {
     statusEl.textContent = state === 0 ? COPY.s : '';
@@ -562,14 +564,14 @@ button,select{font:inherit;color:inherit}
   }
   const setState = (n) => { state = n; render(); };
 
-  /* the big D-number in the last third of the hold */
+  /* the big D-number, counting down once the bars are full */
   let shown = -1;
   function showCount(k) {
     if (k === shown) return;
     shown = k;
     dnum.textContent = String(k);
     dnum.classList.remove('tick'); void dnum.offsetWidth; dnum.classList.add('tick');
-    if (holding) { buzz(6); sfx.tick(k, days()); }
+    if (counting) { buzz(6); sfx.tick(k, days()); }
   }
 
   function paint(v) {
@@ -579,14 +581,10 @@ button,select{font:inherit;color:inherit}
     if (state !== 3) {
       const n = litAt(v);
       if (n !== lit) {
-        if (holding && n > lit && n < 3) { buzz(14); sfx.tap(n + 1); }   // a deeper thud as each light comes on
+        if (holding && n > lit) { buzz(14); sfx.tap(n); }   // a thud as each bar fills, weightier each time
         showLit(n);
       }
     }
-    const fin = v >= 2 / 3, d = days();
-    stage.dataset.final = fin ? '1' : '0';
-    /* the last third counts the days down, n ... 1, and the reveal fires the moment it fills: no D-DAY pause */
-    if (d > 0) showCount(fin ? Math.min(d, Math.max(1, d - Math.floor((v * 3 - 2) * d))) : d);
   }
 
   let ctr = { x: 0, y: 0 };
@@ -603,24 +601,43 @@ button,select{font:inherit;color:inherit}
     stage.style.setProperty('--rx', ((r.left + r.width / 2 - t.left) / t.width * 100).toFixed(1) + '%');   // inside the touch band
   }
 
-  /* press and hold: 01, 02 and 03 light in turn over HOLD_MS (a re-press during the rewind carries on from there) */
+  /* press and hold: the bars fill one after another over HOLD_MS (a re-press during the rewind carries on from there) */
   function startHold() {
-    if (holding) return;
+    if (holding || counting) return;
     holding = true; cancelAnimationFrame(raf); clearTimeout(hintT);
     setCenter();
     const t0 = performance.now() - p * HOLD_MS;
     stage.dataset.hold = '1';
     setPrompt('그대로 눌러주세요', 'HOLD');
     buzz(12);
-    sfx.tap(1);
+    sfx.tap(0);
     const step = (now) => {
       if (!holding) return;
       p = Math.max(0, Math.min(1, (now - t0) / HOLD_MS));
       paint(p);
-      if (p >= 1) { complete(); return; }
+      if (p >= 1) { startCount(); return; }
       raf = requestAnimationFrame(step);
     };
     raf = requestAnimationFrame(step);
+  }
+
+  /* the bars are full: the finger can come off now; the days count down by themselves, n ... 1, then the reveal */
+  function startCount() {
+    holding = false; counting = true; cancelAnimationFrame(raf);
+    const n = days();
+    if (n <= 0) { complete(); return; }                    // from 11/1 there is nothing left to count
+    stage.dataset.final = '1';
+    setPrompt('', '');                                     // no more "keep holding": the finger can come off
+    const dur = Math.max(MIN_COUNT, n * COUNT_STEP), c0 = performance.now();
+    showCount(n);
+    const run = (now) => {
+      if (!counting) return;
+      const v = Math.min(1, (now - c0) / dur);
+      showCount(Math.max(1, n - Math.floor(v * n)));
+      if (v >= 1) { complete(); return; }
+      raf = requestAnimationFrame(run);
+    };
+    raf = requestAnimationFrame(run);
   }
 
   /* let go too early: everything winds back to the start; a quick tap is told how it works */
@@ -642,7 +659,7 @@ button,select{font:inherit;color:inherit}
   }
 
   function complete() {
-    holding = false; cancelAnimationFrame(raf); clearTimeout(hintT);
+    holding = false; counting = false; cancelAnimationFrame(raf); clearTimeout(hintT);
     lockUntil = performance.now() + 1300;
     p = 1; paint(1);
     const n = days();
@@ -657,7 +674,7 @@ button,select{font:inherit;color:inherit}
 
   /* input */
   function press(id) {
-    if (state === 3 || down !== null || performance.now() < lockUntil) return;
+    if (state === 3 || counting || down !== null || performance.now() < lockUntil) return;
     down = id; wake();
     left = RESET_S; autoNum.textContent = String(left);
     stage.classList.add('pressed');
@@ -671,11 +688,12 @@ button,select{font:inherit;color:inherit}
 
   function reset() {
     stage.classList.add('snap');
-    holding = false; down = null; p = 0; lockUntil = 0;
+    holding = false; counting = false; down = null; p = 0; lockUntil = 0;
     cancelAnimationFrame(raf); clearTimeout(hintT);
-    stage.dataset.hold = '0'; flash.classList.remove('go'); stage.classList.remove('pressed');
+    stage.dataset.hold = '0'; stage.dataset.final = '0'; flash.classList.remove('go'); stage.classList.remove('pressed');
     fxClear();
     state = 0; paint(0);
+    if (days() > 0) showCount(days());
     left = RESET_S;
     setState(0);
     void stage.offsetWidth;
@@ -684,7 +702,7 @@ button,select{font:inherit;color:inherit}
 
   function goTo(n) {
     reset();
-    if (n === 3) setTimeout(() => { if (state === 0 && !holding) complete(); }, 80);
+    if (n === 3) setTimeout(() => { if (state === 0 && !holding && !counting) complete(); }, 80);
   }
 
   function tickSecond() {
