@@ -183,9 +183,6 @@ button,select{font:inherit;color:inherit}
 .step .fill::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.95) 50%,transparent 70%);transform:translateX(-100%);animation:glint 2.4s ease-in-out infinite}
 .step[data-i="2"] .fill::after{animation-delay:.2s}
 .step[data-i="3"] .fill::after{animation-delay:.4s}
-/* first screen: a light sweeps back and forth inside the first bar until the screen is pressed */
-.step .bar::before{content:"";position:absolute;inset:0;border-radius:inherit;opacity:0;background:linear-gradient(90deg,rgba(174,210,0,0),var(--lime) 18%,#efff96 50%,var(--lime) 82%,rgba(174,210,0,0)) no-repeat;background-size:38% 100%}
-.stage[data-state="0"][data-hold="0"] .step[data-i="1"] .bar::before{animation:pingpong 1s cubic-bezier(.45,0,.55,1) infinite alternate}
 .step.on .n,.step.on .t{color:var(--ink)}
 .step.on .n::before{opacity:1}
 .stage[data-state="3"] .step[data-i="3"] .t{justify-self:start;background:linear-gradient(transparent 60%,var(--lime) 60% 92%,transparent 92%)}
@@ -286,7 +283,6 @@ button,select{font:inherit;color:inherit}
 @keyframes tick{0%{transform:scale(.9)}100%{transform:scale(1)}}
 @keyframes glint{0%{transform:translateX(-100%)}55%,100%{transform:translateX(100%)}}
 @keyframes nudge{0%,100%{transform:none}30%{transform:scale(.93)}65%{transform:scale(1.04)}}
-@keyframes pingpong{0%{background-position:-12% 0;opacity:.7}50%{opacity:1}100%{background-position:112% 0;opacity:.7}}
 @keyframes land{
   0%{opacity:0;transform:translateY(-34%) scale(1.7) rotate(-5deg);filter:blur(26px);animation-timing-function:cubic-bezier(.2,.9,.25,1)}
   46%{opacity:1;transform:translateY(3%) scale(.93) rotate(1.2deg);filter:blur(0);animation-timing-function:ease-in-out}
@@ -300,7 +296,6 @@ button,select{font:inherit;color:inherit}
 @keyframes flash{0%{opacity:0;transform:scale(.7)}9%{opacity:1;transform:scale(1.1)}30%{opacity:.95}100%{opacity:0;transform:scale(1.7)}}
 @media (prefers-reduced-motion:reduce){
   .halo{animation:none!important}
-  .stage[data-state="0"][data-hold="0"] .step[data-i="1"] .bar::before{animation:none;opacity:1;background-position:0 0}
   .step .fill::after{animation:none;display:none}
   .ringwrap.nudge{animation:none}
   .flash.go{animation:none}
@@ -431,7 +426,7 @@ button,select{font:inherit;color:inherit}
       </div>
     </section>
     <p>iPad로 열면 화면 전체로 보여요. 시연 전에 이 패널은 닫아두세요.</p>
-    <p class="ver">앱 버전 23 · 빌드 3cbb5d23</p>
+    <p class="ver">앱 버전 24 · 빌드 aec9599a</p>
   </aside>
 </main>
 <script>
