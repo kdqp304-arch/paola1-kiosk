@@ -38,7 +38,7 @@
 <style>
 /* Pretendard (SIL OFL 1.1), variable weight, cut down to the glyphs this page uses and embedded so it renders the same offline */
 @font-face{font-family:"Pretendard";font-style:normal;font-weight:100 900;font-display:swap;src:url(pretendard-subset.woff2) format("woff2")}
-/* Layout: one device-screen stage fitted to the viewport. Portrait stacks step bar / touch band / key visual; landscape sets touch band and key visual side by side (1 : 1.1) under a full-width step bar. Everything inside the stage is sized in --u, 1% of its short edge. */
+/* Layout: one device-screen stage fitted to the viewport. Portrait stacks step bar / touch band / key visual; landscape sets touch band and key visual side by side (1 : 1) under a full-width step bar (20% of the height). Everything inside the stage is sized in --u, 1% of its short edge. */
 :root{
   --ink:#034a68;
   --ink-deep:#05384f;
@@ -75,7 +75,7 @@ button,select{font:inherit;color:inherit}
   background:var(--deep);color:#fff;font-family:var(--font-ko);cursor:pointer;
   touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;
 }
-.stage[data-o="l"]{grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);grid-template-rows:auto minmax(0,1fr)}
+.stage[data-o="l"]{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:minmax(calc(var(--u)*20),auto) minmax(0,1fr)}
 .stage[data-o="l"] .touch{grid-area:2/1}
 .stage[data-o="l"] .visual{grid-area:2/2}
 .stage[data-o="l"] .steps{grid-area:1/1/2/3}
@@ -189,11 +189,11 @@ button,select{font:inherit;color:inherit}
 .step.on .n,.step.on .t{color:var(--ink)}
 .step.on .n::before{opacity:1}
 .stage[data-state="3"] .step[data-i="3"] .t{justify-self:start;background:linear-gradient(transparent 60%,var(--lime) 60% 92%,transparent 92%)}
-.stage[data-o="l"] .step .n{grid-column:1;grid-row:1;font-size:calc(var(--u)*6.2)}
-.stage[data-o="l"] .step .t{grid-column:2;grid-row:1;margin-top:0;font-size:calc(var(--u)*4.2);-webkit-text-stroke-width:calc(var(--u)*.42)}
-.stage[data-o="l"] .step .bar{grid-column:1/-1;grid-row:3}
-/* landscape: each title sits beside its numeral */
-.stage[data-o="l"] .step{grid-template-columns:auto 1fr;grid-template-rows:auto 1fr calc(var(--u)*1.9);column-gap:calc(var(--u)*1.4);align-items:center;padding-top:calc(var(--u)*1)}
+.stage[data-o="l"] .step .n{grid-column:1;grid-row:2;font-size:calc(var(--u)*6.2)}
+.stage[data-o="l"] .step .t{grid-column:2;grid-row:2;margin-top:0;font-size:calc(var(--u)*4.2);-webkit-text-stroke-width:calc(var(--u)*.42)}
+.stage[data-o="l"] .step .bar{grid-column:1/-1;grid-row:4}
+/* landscape: each title sits beside its numeral, the pair centred between the top row and the bar */
+.stage[data-o="l"] .step{grid-template-columns:auto 1fr;grid-template-rows:1fr auto 1fr calc(var(--u)*1.9);column-gap:calc(var(--u)*1.4);align-items:center;padding-top:calc(var(--u)*1)}
 .stage[data-o="l"] .steps{grid-template-columns:repeat(3,minmax(0,1fr));padding-bottom:calc(var(--u)*1.2)}
 /* once a step is lit its title fills with navy; a thinner outline keeps the filled letters crisp */
 .stage .step.on .t{-webkit-text-stroke-width:calc(var(--u)*.12)}
@@ -413,7 +413,7 @@ button,select{font:inherit;color:inherit}
       </div>
     </section>
     <p>iPad로 열면 화면 전체로 보여요. 시연 전에 이 패널은 닫아두세요.</p>
-    <p class="ver">앱 버전 21 · 빌드 b7b54e17</p>
+    <p class="ver">앱 버전 22 · 빌드 55085315</p>
   </aside>
 </main>
 <script>
