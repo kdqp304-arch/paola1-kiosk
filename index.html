@@ -169,15 +169,15 @@ button,select{font:inherit;color:inherit}
 .vert{position:absolute;right:calc(var(--u)*2.4);top:calc(var(--u)*5);margin:0;writing-mode:vertical-rl;font:500 calc(var(--u)*1.8)/1 var(--font-en);letter-spacing:.3em;color:rgba(3,74,104,.8)}
 .corner{position:absolute;right:0;bottom:0;width:calc(var(--u)*3);height:calc(var(--u)*10.5);background:var(--lime);clip-path:polygon(100% 0,100% 100%,0 100%)}
 
-/* C. step bar, across the top: a slim utility row (auto reset + the reset button), then big 01 / 02 / 03 numerals, hollow until their light is on, then filled with a lime shadow */
+/* C. step bar, across the top: a slim utility row (auto reset + the reset button), then 01 / 02 / 03 numerals with their titles centred above the bars, hollow until their light is on, then filled with a lime shadow */
 .steps{grid-area:1/1;position:relative;z-index:2;min-height:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:auto 1fr;column-gap:calc(var(--u)*4);padding:0 calc(var(--u)*6.2) calc(var(--u)*1.5);background:var(--paper);color:var(--ink)}
-.step{grid-row:2;display:grid;grid-template-rows:auto auto 1fr calc(var(--u)*2.3);min-width:0;padding-top:calc(var(--u)*1.3);color:#5f716b}
-.step .n{position:relative;justify-self:start;isolation:isolate;font:italic 900 calc(var(--u)*7.8)/.84 var(--font-en);letter-spacing:-.04em;color:var(--paper);paint-order:stroke fill;-webkit-text-stroke:calc(var(--u)*.5) var(--ink);transition:color .5s}
+.step{grid-row:2;display:grid;grid-template-rows:1fr auto auto 1fr calc(var(--u)*2.3);min-width:0;padding-top:calc(var(--u)*1.3);color:#5f716b}
+.step .n{grid-row:2;position:relative;justify-self:start;isolation:isolate;font:italic 900 calc(var(--u)*7.2)/.84 var(--font-en);letter-spacing:-.04em;color:var(--paper);paint-order:stroke fill;-webkit-text-stroke:calc(var(--u)*.5) var(--ink);transition:color .5s}
 .step .n::before{content:attr(data-n);position:absolute;left:-.045em;top:.045em;z-index:-1;color:var(--lime);-webkit-text-stroke:0;opacity:0;transition:opacity .5s}
-.step .t{margin-top:calc(var(--u)*1.2);font-family:var(--font-en);font-style:italic;font-weight:900;font-size:calc(var(--u)*3.2);line-height:1.15;letter-spacing:.035em;word-spacing:.06em;white-space:nowrap;color:var(--paper);paint-order:stroke fill;-webkit-text-stroke:calc(var(--u)*.34) var(--ink);transition:color .5s}
+.step .t{grid-row:3;margin-top:calc(var(--u)*1);font-family:var(--font-en);font-style:italic;font-weight:900;font-size:calc(var(--u)*4.2);line-height:1.15;letter-spacing:.035em;word-spacing:.06em;white-space:nowrap;color:var(--paper);paint-order:stroke fill;-webkit-text-stroke:calc(var(--u)*.4) var(--ink);transition:color .5s}
 /* Korean has no Montserrat glyphs: Pretendard Black, slanted at Montserrat Italic's own angle */
 .step .t .k{display:inline-block;font-family:var(--font-ko);font-style:normal;font-weight:900;letter-spacing:.02em;transform:skewX(-11.3deg);transform-origin:50% 100%}
-.step .bar{grid-row:4;align-self:end;display:block;position:relative;height:calc(var(--u)*1.2);border-radius:calc(var(--u)*.6);background:#e2e9d6}
+.step .bar{grid-row:5;align-self:end;display:block;position:relative;height:calc(var(--u)*1.2);border-radius:calc(var(--u)*.6);background:#e2e9d6}
 /* the bars fill while the screen is held (--f, 0..1, from the hold), in the bright, glinting lime of the first screen */
 .step .fill{position:absolute;left:0;top:0;bottom:0;width:calc(var(--f,0)*100%);opacity:min(1,calc(var(--f,0)*30));overflow:hidden;border-radius:inherit;background:linear-gradient(90deg,#b9dc12,var(--glow) 55%,#efff96);box-shadow:0 0 calc(var(--u)*.8) rgba(212,251,106,.95),0 0 calc(var(--u)*2) rgba(190,232,40,.5)}
 .step .fill::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.95) 50%,transparent 70%);transform:translateX(-100%);animation:glint 2.4s ease-in-out infinite}
@@ -187,7 +187,7 @@ button,select{font:inherit;color:inherit}
 .step.on .n::before{opacity:1}
 .stage[data-state="3"] .step[data-i="3"] .t{justify-self:start;background:linear-gradient(transparent 60%,var(--lime) 60% 92%,transparent 92%)}
 .stage[data-o="l"] .step .n{grid-column:1;grid-row:2;font-size:calc(var(--u)*6.2)}
-.stage[data-o="l"] .step .t{grid-column:2;grid-row:2;margin-top:0;font-size:calc(var(--u)*4.2);-webkit-text-stroke-width:calc(var(--u)*.42)}
+.stage[data-o="l"] .step .t{grid-column:2;grid-row:2;margin-top:0;font-size:calc(var(--u)*5);-webkit-text-stroke-width:calc(var(--u)*.42)}
 .stage[data-o="l"] .step .bar{grid-column:1/-1;grid-row:4}
 /* landscape: each title sits beside its numeral, the pair centred between the top row and the bar */
 .stage[data-o="l"] .step{grid-template-columns:auto 1fr;grid-template-rows:1fr auto 1fr calc(var(--u)*1.9);column-gap:calc(var(--u)*1.4);align-items:center;padding-top:calc(var(--u)*1)}
@@ -426,7 +426,7 @@ button,select{font:inherit;color:inherit}
       </div>
     </section>
     <p>iPad로 열면 화면 전체로 보여요. 시연 전에 이 패널은 닫아두세요.</p>
-    <p class="ver">앱 버전 24 · 빌드 aec9599a</p>
+    <p class="ver">앱 버전 25 · 빌드 bdef4ec3</p>
   </aside>
 </main>
 <script>
