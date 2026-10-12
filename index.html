@@ -413,7 +413,7 @@ button,select{font:inherit;color:inherit}
       </div>
     </section>
     <p>iPad로 열면 화면 전체로 보여요. 시연 전에 이 패널은 닫아두세요.</p>
-    <p class="ver">앱 버전 18 · 빌드 0017cdee</p>
+    <p class="ver">앱 버전 19 · 빌드 a7f431fa</p>
   </aside>
 </main>
 <script>
@@ -430,8 +430,7 @@ button,select{font:inherit;color:inherit}
   const photos = [...document.querySelectorAll('.ph')];
 
   const HOLD_MS = 2400;                    // press and hold until the three bars are full (0.8 s each)
-  const COUNT_STEP = 65;                   // then the days count down by themselves: ms per D-number
-  const MIN_COUNT = 600;                   // the count takes at least this long, even at D-1
+  const COUNT_MS = 1200;                   // then the days count down by themselves over this long, whatever the number of days
   const RESET_S = 10;                      // seconds the reveal stays up before the screen resets by itself
   const TARGET = new Date(2026, 10, 1);    // 11월 1일 급여
   const BASE = new Date(2026, 9, 23);      // the screen counts as 10/23 (D-9) until the real date gets there
@@ -628,7 +627,7 @@ button,select{font:inherit;color:inherit}
     if (n <= 0) { complete(); return; }                    // from 11/1 there is nothing left to count
     stage.dataset.final = '1';
     setPrompt('', '');                                     // no more "keep holding": the finger can come off
-    const dur = Math.max(MIN_COUNT, n * COUNT_STEP), c0 = performance.now();
+    const dur = COUNT_MS, c0 = performance.now();
     showCount(n);
     const run = (now) => {
       if (!counting) return;
