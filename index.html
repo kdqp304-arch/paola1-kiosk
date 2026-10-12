@@ -270,6 +270,15 @@ button,select{font:inherit;color:inherit}
 .tools option{color:#062a3b;background:#fff}
 .tb[aria-pressed="true"]{background:var(--glow);border-color:var(--glow);color:#052a3a;font-weight:600}
 .tools p{margin:0;font-size:12px;color:#8fb2c0}
+/* participation log: a number per day with a thin bar, in the brand glow; text stays in the panel's own inks */
+.tools .pnum{display:flex;flex-wrap:wrap;gap:4px 14px;margin:0 0 8px}
+.tools .pnum b{font-size:16px;font-weight:700;color:#fff;font-variant-numeric:tabular-nums}
+.pdays{list-style:none;margin:0 0 8px;padding:0;display:grid;gap:4px}
+.pdays li{display:grid;grid-template-columns:64px minmax(0,1fr) 32px;align-items:center;gap:8px;font-size:12px;color:#8fb2c0}
+.pdays li.today span{color:#fff;font-weight:600}
+.pdays i{position:relative;height:6px;border-radius:3px;background:rgba(255,255,255,.08)}
+.pdays i::after{content:"";position:absolute;left:0;top:0;bottom:0;width:calc(var(--w,0)*100%);border-radius:3px;background:var(--glow)}
+.pdays b{justify-self:end;font-weight:600;color:#fff;font-variant-numeric:tabular-nums}
 
 .snap,.snap *,.snap *::before,.snap *::after{transition:none!important;animation:none!important}
 @keyframes halo{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:1;transform:scale(1.045)}}
@@ -412,8 +421,17 @@ button,select{font:inherit;color:inherit}
         <button class="tb" id="tSound" type="button" aria-pressed="true">소리</button>
       </div>
     </section>
+    <section class="plays" aria-label="참여 기록">
+      <h2>참여 기록 · 이 기기</h2>
+      <p class="pnum"><span>오늘 <b id="pToday">0</b>회</span><span>최근 7일 <b id="pWeek">0</b>회</span><span>전체 <b id="pAll">0</b>회</span></p>
+      <ol class="pdays" id="pDays" aria-label="최근 7일 완료 횟수"></ol>
+      <div class="row">
+        <button class="tb" id="pCopy" type="button">보고서용 복사</button>
+        <button class="tb" id="pReset" type="button">기록 지우기</button>
+      </div>
+    </section>
     <p>iPad로 열면 화면 전체로 보여요. 시연 전에 이 패널은 닫아두세요.</p>
-    <p class="ver">앱 버전 22 · 빌드 55085315</p>
+    <p class="ver">앱 버전 23 · 빌드 3cbb5d23</p>
   </aside>
 </main>
 <script>
@@ -657,8 +675,9 @@ button,select{font:inherit;color:inherit}
     raf = requestAnimationFrame(back);
   }
 
-  function complete() {
+  function complete(preview) {
     holding = false; counting = false; cancelAnimationFrame(raf); clearTimeout(hintT);
+    if (!preview) countReveal();                           // the preview tools' jump to the reveal is not a visit
     lockUntil = performance.now() + 1300;
     p = 1; paint(1);
     const n = days();
@@ -701,7 +720,7 @@ button,select{font:inherit;color:inherit}
 
   function goTo(n) {
     reset();
-    if (n === 3) setTimeout(() => { if (state === 0 && !holding && !counting) complete(); }, 80);
+    if (n === 3) setTimeout(() => { if (state === 0 && !holding && !counting) complete(true); }, 80);
   }
 
   function tickSecond() {
@@ -962,6 +981,7 @@ button,select{font:inherit;color:inherit}
     const open = tools.hidden;
     tools.hidden = !open;
     toolsBtn.setAttribute('aria-expanded', String(open));
+    if (open) showLog();
   });
   document.querySelectorAll('[data-go]').forEach((b) => b.addEventListener('click', () => goTo(+b.dataset.go)));
   $('#tDate').addEventListener('change', (e) => {
@@ -975,6 +995,55 @@ button,select{font:inherit;color:inherit}
   const syncSound = () => tSound.setAttribute('aria-pressed', String(soundOn));
   tSound.addEventListener('click', () => { soundOn = !soundOn; try { localStorage.setItem('paola-sound', soundOn ? 'on' : 'off'); } catch (e) { /* storage blocked */ } syncSound(); sfx.tap(0); });
   syncSound();
+
+  /* participation log: how many times the reveal was reached, per day (real calendar date), kept on this device only */
+  const LOG_KEY = 'paola-reveals', WD = ['일', '월', '화', '수', '목', '금', '토'];
+  const pToday = $('#pToday'), pWeek = $('#pWeek'), pAll = $('#pAll'), pDays = $('#pDays'), pCopy = $('#pCopy'), pReset = $('#pReset');
+  const pad2 = (x) => String(x).padStart(2, '0');
+  const dayKey = (d) => d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+  const dayLabel = (d) => (d.getMonth() + 1) + '/' + d.getDate() + '(' + WD[d.getDay()] + ')';
+  function readLog() {
+    try { const o = JSON.parse(localStorage.getItem(LOG_KEY) || '{}'); return o && typeof o === 'object' && !Array.isArray(o) ? o : {}; } catch (e) { return {}; }
+  }
+  function writeLog(o) { try { localStorage.setItem(LOG_KEY, JSON.stringify(o)); } catch (e) { /* storage blocked: nothing kept */ } }
+  function countReveal() { const o = readLog(), k = dayKey(new Date()); o[k] = (+o[k] || 0) + 1; writeLog(o); showLog(); }
+  function lastWeek() {
+    const o = readLog(), t = new Date(), out = [];
+    for (let i = 0; i < 7; i++) { const d = new Date(t.getFullYear(), t.getMonth(), t.getDate() - i); out.push({ d, c: +o[dayKey(d)] || 0 }); }
+    return { o, days: out };
+  }
+  function showLog() {
+    const { o, days } = lastWeek(), top = Math.max(1, ...days.map((x) => x.c));
+    pToday.textContent = String(days[0].c);
+    pWeek.textContent = String(days.reduce((a, x) => a + x.c, 0));
+    pAll.textContent = String(Object.values(o).reduce((a, v) => a + (+v || 0), 0));
+    pDays.innerHTML = days.map((x, i) => '<li' + (i ? '' : ' class="today"') + '><span>' + dayLabel(x.d) + '</span><i style="--w:' + (x.c / top).toFixed(3) + '"></i><b>' + x.c + '</b></li>').join('');
+  }
+  function logText() {
+    const { days } = lastWeek(), sum = days.reduce((a, x) => a + x.c, 0);
+    return ['PAOLA-1 터치 화면 완료 횟수 ' + dayLabel(days[6].d) + '~' + dayLabel(days[0].d) + ': 총 ' + sum + '회']
+      .concat(days.map((x) => '- ' + dayLabel(x.d) + ' ' + x.c + '회')).join('\n');
+  }
+  async function copyText(t) {
+    try { await navigator.clipboard.writeText(t); return true; } catch (e) { /* fall back below */ }
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = t; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;left:0;top:0;opacity:0';
+      document.body.appendChild(ta); ta.select(); const ok = document.execCommand('copy'); ta.remove(); return ok;
+    } catch (e) { return false; }
+  }
+  function say(btn, text, ms) {
+    if (!btn.dataset.label) btn.dataset.label = btn.textContent;
+    btn.textContent = text; clearTimeout(btn.sayT);
+    btn.sayT = setTimeout(() => { btn.textContent = btn.dataset.label; }, ms || 1600);
+  }
+  pCopy.addEventListener('click', async () => { say(pCopy, (await copyText(logText())) ? '복사했어요' : '복사가 안 돼요'); });
+  let armed = 0;
+  pReset.addEventListener('click', () => {
+    if (Date.now() - armed < 3000) { writeLog({}); showLog(); armed = 0; say(pReset, '지웠어요'); return; }
+    armed = Date.now(); say(pReset, '한 번 더 누르면 지워져요', 3000);
+  });
+  showLog();
 
   stage.addEventListener('pointerdown', (e) => { if (e.button > 0) return; press(e.pointerId); });
   addEventListener('pointerup', (e) => release(e.pointerId));
