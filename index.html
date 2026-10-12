@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="robots" content="noindex, nofollow, noarchive">
 <meta name="googlebot" content="noindex, nofollow, noarchive">
 <meta name="description" content="OLAPARIB + BEVACIZUMAB · 11월 1일 급여 · 세 번 터치해서 확인하세요">
@@ -58,7 +58,7 @@
   color-scheme:dark;
 }
 *{box-sizing:border-box}
-html,body{height:100%}
+html,body{height:100%;touch-action:manipulation}
 body{margin:0;background:var(--page);color:var(--page-fg);font-family:var(--font-ko);font-kerning:normal;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow:hidden;overscroll-behavior:none;-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
 [hidden]{display:none!important}
 button,select{font:inherit;color:inherit}
@@ -106,6 +106,7 @@ button,select{font:inherit;color:inherit}
 .ringwrap{grid-row:2;grid-column:1;align-self:center;position:relative;width:calc(var(--u)*23);aspect-ratio:1}
 .stage[data-o="l"] .ringwrap{width:calc(var(--u)*22)}
 .ring{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.ringwrap.nudge{animation:nudge .45s ease}
 .halo{fill:none;stroke:rgba(212,251,106,.24);stroke-width:1;transform-origin:100px 100px;animation:halo 2.8s ease-in-out infinite}
 .disc{fill:rgba(3,70,98,.6);stroke:var(--glow);stroke-width:2.6;filter:drop-shadow(0 0 5px rgba(212,251,106,.8));transition:fill .2s}
 .dash{fill:none;stroke:rgba(212,251,106,.5);stroke-width:1;stroke-dasharray:3 4}
@@ -170,30 +171,29 @@ button,select{font:inherit;color:inherit}
 
 /* C. step bar, across the top: a slim utility row (auto reset + the reset button), then big 01 / 02 / 03 numerals, hollow until their light is on, then filled with a lime shadow */
 .steps{grid-area:1/1;position:relative;z-index:2;min-height:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:auto 1fr;column-gap:calc(var(--u)*4);padding:0 calc(var(--u)*6.2) calc(var(--u)*1.5);background:var(--paper);color:var(--ink)}
-.step{grid-row:2;display:grid;grid-template-rows:auto auto auto 1fr calc(var(--u)*2.3);min-width:0;padding-top:calc(var(--u)*1.3);color:#5f716b}
+.step{grid-row:2;display:grid;grid-template-rows:auto auto 1fr calc(var(--u)*2.3);min-width:0;padding-top:calc(var(--u)*1.3);color:#5f716b}
 .step .n{position:relative;justify-self:start;isolation:isolate;font:italic 900 calc(var(--u)*7.8)/.84 var(--font-en);letter-spacing:-.04em;color:var(--paper);paint-order:stroke fill;-webkit-text-stroke:calc(var(--u)*.5) var(--ink);transition:color .5s}
 .step .n::before{content:attr(data-n);position:absolute;left:-.045em;top:.045em;z-index:-1;color:var(--lime);-webkit-text-stroke:0;opacity:0;transition:opacity .5s}
 .step .t{margin-top:calc(var(--u)*1.2);font-family:var(--font-en);font-style:italic;font-weight:900;font-size:calc(var(--u)*3.2);line-height:1.15;letter-spacing:.035em;word-spacing:.06em;white-space:nowrap;color:var(--paper);paint-order:stroke fill;-webkit-text-stroke:calc(var(--u)*.34) var(--ink);transition:color .5s}
 /* Korean has no Montserrat glyphs: Pretendard Black, slanted at Montserrat Italic's own angle */
 .step .t .k{display:inline-block;font-family:var(--font-ko);font-style:normal;font-weight:900;letter-spacing:.02em;transform:skewX(-11.3deg);transform-origin:50% 100%}
-.step .s{margin-top:calc(var(--u)*.7);font-size:calc(var(--u)*2.3);font-weight:500;line-height:1.3;letter-spacing:-.01em;color:var(--mute)}
-.step .bar{grid-row:5;align-self:end;display:block;position:relative;overflow:hidden;height:calc(var(--u)*.9);background:var(--rule)}
-.step .bar::after{content:"";position:absolute;inset:0;background:var(--lime);transform:scaleX(0);transform-origin:left;transition:transform .8s cubic-bezier(.2,.8,.2,1)}
+.step .bar{grid-row:4;align-self:end;display:block;position:relative;height:calc(var(--u)*1.2);border-radius:calc(var(--u)*.6);background:#e2e9d6}
+/* the bars fill while the screen is held (--f, 0..1, from the hold), in the bright, glinting lime of the first screen */
+.step .fill{position:absolute;left:0;top:0;bottom:0;width:calc(var(--f,0)*100%);opacity:min(1,calc(var(--f,0)*30));overflow:hidden;border-radius:inherit;background:linear-gradient(90deg,#b9dc12,var(--glow) 55%,#efff96);box-shadow:0 0 calc(var(--u)*.8) rgba(212,251,106,.95),0 0 calc(var(--u)*2) rgba(190,232,40,.5)}
+.step .fill::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.95) 50%,transparent 70%);transform:translateX(-100%);animation:glint 2.4s ease-in-out infinite}
+.step[data-i="2"] .fill::after{animation-delay:.2s}
+.step[data-i="3"] .fill::after{animation-delay:.4s}
+/* first screen: a light sweeps back and forth inside the first bar until the screen is pressed */
+.step .bar::before{content:"";position:absolute;inset:0;border-radius:inherit;opacity:0;background:linear-gradient(90deg,rgba(174,210,0,0),var(--lime) 18%,#efff96 50%,var(--lime) 82%,rgba(174,210,0,0)) no-repeat;background-size:38% 100%}
+.stage[data-state="0"][data-hold="0"] .step[data-i="1"] .bar::before{animation:pingpong 1s cubic-bezier(.45,0,.55,1) infinite alternate}
 .step.on .n,.step.on .t{color:var(--ink)}
 .step.on .n::before{opacity:1}
-.step.on .bar::after{transform:scaleX(1)}
-/* the bar of the step to touch next sweeps back and forth: step 1 on the first screen, then 2, then 3; faster while the third touch is held */
-.stage[data-state="0"] .step[data-i="1"] .bar::after,.stage[data-state="1"] .step[data-i="2"] .bar::after,.stage[data-state="2"] .step[data-i="3"] .bar::after{background:linear-gradient(90deg,rgba(174,210,0,0),var(--lime) 18%,#efff96 50%,var(--lime) 82%,rgba(174,210,0,0));animation:pingpong 1s cubic-bezier(.45,0,.55,1) infinite alternate}
-.stage[data-state="0"] .step[data-i="1"] .bar,.stage[data-state="1"] .step[data-i="2"] .bar,.stage[data-state="2"] .step[data-i="3"] .bar{background:#e2e9d6;height:calc(var(--u)*1.2)}
-.stage[data-hold="1"] .step[data-i="3"] .bar::after{animation-duration:.5s}
 .stage[data-state="3"] .step[data-i="3"] .t{justify-self:start;background:linear-gradient(transparent 60%,var(--lime) 60% 92%,transparent 92%)}
-.stage[data-state="3"] .step[data-i="3"] .bar{height:calc(var(--u)*1.3)}
 .stage[data-o="l"] .step .n{grid-column:1;grid-row:1;font-size:calc(var(--u)*6.2)}
 .stage[data-o="l"] .step .t{grid-column:2;grid-row:1;margin-top:0;font-size:calc(var(--u)*4.2);-webkit-text-stroke-width:calc(var(--u)*.42)}
-.stage[data-o="l"] .step .s{grid-column:1/-1;grid-row:2;margin-top:calc(var(--u)*.9);font-size:calc(var(--u)*2.1)}
-.stage[data-o="l"] .step .bar{grid-column:1/-1;grid-row:4}
+.stage[data-o="l"] .step .bar{grid-column:1/-1;grid-row:3}
 /* landscape: each title sits beside its numeral */
-.stage[data-o="l"] .step{grid-template-columns:auto 1fr;grid-template-rows:auto auto 1fr calc(var(--u)*1.9);column-gap:calc(var(--u)*1.4);align-items:center;padding-top:calc(var(--u)*1)}
+.stage[data-o="l"] .step{grid-template-columns:auto 1fr;grid-template-rows:auto 1fr calc(var(--u)*1.9);column-gap:calc(var(--u)*1.4);align-items:center;padding-top:calc(var(--u)*1)}
 .stage[data-o="l"] .steps{grid-template-columns:repeat(3,minmax(0,1fr));padding-bottom:calc(var(--u)*1.2)}
 /* once a step is lit its title fills with navy; a thinner outline keeps the filled letters crisp */
 .stage .step.on .t{-webkit-text-stroke-width:calc(var(--u)*.12)}
@@ -204,7 +204,7 @@ button,select{font:inherit;color:inherit}
 .auto b{font-weight:600;font-variant-numeric:tabular-nums}
 .stage[data-state="0"] .auto{visibility:hidden}
 
-/* D-day countdown while the third light is held: centred on the whole screen */
+/* D-day countdown in the last third of the hold: centred on the whole screen */
 .dcount{position:absolute;inset:0;z-index:4;pointer-events:none;display:grid;place-content:center;justify-items:center;text-align:center;opacity:0;transform:scale(.94);transition:opacity .2s,transform .3s cubic-bezier(.2,.8,.2,1);font-family:var(--font-en)}
 .dcount::before{content:"";position:absolute;inset:0;background:radial-gradient(70% calc(var(--u)*25) at 50% 50%,rgba(1,32,50,.88),rgba(1,32,50,.62) 55%,rgba(1,32,50,0) 100%)}
 .dcount>*{position:relative;margin:0}
@@ -212,7 +212,7 @@ button,select{font:inherit;color:inherit}
 .dd i{font-style:normal;color:var(--glow)}
 .dd b{font-weight:800}
 .dd b.tick{animation:tick .06s ease-out}
-.stage[data-hold="1"][data-count="1"] .dcount{opacity:1;transform:none}
+.stage[data-hold="1"][data-count="1"][data-final="1"] .dcount{opacity:1;transform:none}
 
 /* E. the third light: a bright panel that spreads from the ring over the touch band */
 .light{
@@ -275,7 +275,9 @@ button,select{font:inherit;color:inherit}
 @keyframes halo{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:1;transform:scale(1.045)}}
 @keyframes rise{from{opacity:0;transform:translateY(calc(var(--u)*1.2))}to{opacity:1;transform:none}}
 @keyframes tick{0%{transform:scale(.9)}100%{transform:scale(1)}}
-@keyframes pingpong{0%{transform:translateX(-16%) scaleX(.38);opacity:.7}50%{opacity:1}100%{transform:translateX(78%) scaleX(.38);opacity:.7}}
+@keyframes glint{0%{transform:translateX(-100%)}55%,100%{transform:translateX(100%)}}
+@keyframes nudge{0%,100%{transform:none}30%{transform:scale(.93)}65%{transform:scale(1.04)}}
+@keyframes pingpong{0%{background-position:-12% 0;opacity:.7}50%{opacity:1}100%{background-position:112% 0;opacity:.7}}
 @keyframes land{
   0%{opacity:0;transform:translateY(-34%) scale(1.7) rotate(-5deg);filter:blur(26px);animation-timing-function:cubic-bezier(.2,.9,.25,1)}
   46%{opacity:1;transform:translateY(3%) scale(.93) rotate(1.2deg);filter:blur(0);animation-timing-function:ease-in-out}
@@ -289,7 +291,9 @@ button,select{font:inherit;color:inherit}
 @keyframes flash{0%{opacity:0;transform:scale(.7)}9%{opacity:1;transform:scale(1.1)}30%{opacity:.95}100%{opacity:0;transform:scale(1.7)}}
 @media (prefers-reduced-motion:reduce){
   .halo{animation:none!important}
-  .stage[data-state="0"] .step[data-i="1"] .bar::after,.stage[data-state="1"] .step[data-i="2"] .bar::after,.stage[data-state="2"] .step[data-i="3"] .bar::after{animation:none;transform:scaleX(.34)}
+  .stage[data-state="0"][data-hold="0"] .step[data-i="1"] .bar::before{animation:none;opacity:1;background-position:0 0}
+  .step .fill::after{animation:none;display:none}
+  .ringwrap.nudge{animation:none}
   .flash.go{animation:none}
   .light,.ph{transition-duration:.01s!important}
   .stage .date span,.stage .l-sub,.stage .ln,.stage .chip{animation-duration:.01s!important;animation-delay:0s!important}
@@ -346,12 +350,12 @@ button,select{font:inherit;color:inherit}
       </figure>
 
       <nav class="steps" id="steps" aria-label="진행 단계">
-        <div class="step" data-i="1"><b class="n" data-n="01">01</b><span class="t">HRD+</span><span class="s">첫 번째 터치</span><i class="bar"></i></div>
-        <div class="step" data-i="2"><b class="n" data-n="02">02</b><span class="t">PAOLA-1</span><span class="s">두 번째 터치</span><i class="bar"></i></div>
-        <div class="step" data-i="3"><b class="n" data-n="03">03</b><span class="t"><span class="k">급여</span></span><span class="s">세 번째 터치</span><i class="bar"></i></div>
+        <div class="step" data-i="1"><b class="n" data-n="01">01</b><span class="t">HRD+</span><i class="bar"><i class="fill"></i></i></div>
+        <div class="step" data-i="2"><b class="n" data-n="02">02</b><span class="t">PAOLA-1</span><i class="bar"><i class="fill"></i></i></div>
+        <div class="step" data-i="3"><b class="n" data-n="03">03</b><span class="t"><span class="k">급여</span></span><i class="bar"><i class="fill"></i></i></div>
         <p class="auto">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="#a9b8a0" stroke-width="2"/><circle cx="12" cy="12" r="4.2" fill="#9db08f"/></svg>
-          <span>자동 초기화 <b id="autoNum">60</b> 초</span>
+          <span>자동 초기화 <b id="autoNum">10</b> 초</span>
         </p>
       </nav>
 
@@ -386,9 +390,7 @@ button,select{font:inherit;color:inherit}
       <h2>상태 바로가기</h2>
       <div class="row">
         <button class="tb" type="button" data-go="0">대기</button>
-        <button class="tb" type="button" data-go="1">01</button>
-        <button class="tb" type="button" data-go="2">02</button>
-        <button class="tb" type="button" data-go="3">03 공개</button>
+        <button class="tb" type="button" data-go="3">공개</button>
       </div>
     </section>
     <section>
@@ -411,7 +413,7 @@ button,select{font:inherit;color:inherit}
       </div>
     </section>
     <p>iPad로 열면 화면 전체로 보여요. 시연 전에 이 패널은 닫아두세요.</p>
-    <p class="ver">앱 버전 16 · 빌드 242dcd5c</p>
+    <p class="ver">앱 버전 17 · 빌드 3a05b398</p>
   </aside>
 </main>
 <script>
@@ -427,23 +429,17 @@ button,select{font:inherit;color:inherit}
   const steps = [...document.querySelectorAll('.step')];
   const photos = [...document.querySelectorAll('.ph')];
 
-  const HOLD_MS = 2200;                    // how long the third touch is held when there is no countdown (from 11/1)
-  const RESET_S = 60;                      // idle seconds before the screen resets
+  const HOLD_MS = 2000;                    // one press and hold lights the three steps in turn, then the reveal
+  const RESET_S = 10;                      // seconds the reveal stays up before the screen resets by itself
   const TARGET = new Date(2026, 10, 1);    // 11월 1일 급여
   const BASE = new Date(2026, 9, 23);      // the screen counts as 10/23 (D-9) until the real date gets there
-  const COUNT_STEP = 65;                   // ms per D-number while the third touch charges; the reveal fires right after D-1
-  const MIN_HOLD = 600;                    // shortest hold, so a quick tap never fires the reveal
   const PHOTO_DREAM = 912;                 // row of the photo where the baked "DREAM" ends
   const PHOTO_W = 1240, PHOTO_H = 1269, PHOTO_TOP = 281;   // photo size, and the photo row where the original design's crop began
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  const COPY = [
-    { s: '세 개의 빛을 켜보세요.', ko: '터치해주세요', en: 'TOUCH TO START' },
-    { ko: '한 번 더 터치해주세요', en: 'TOUCH TO CONTINUE' },
-    { ko: '마지막 빛은 꾹 눌러주세요', en: 'PRESS & HOLD' },
-  ];
+  const COPY = { s: '세 개의 빛을 켜보세요.', ko: '꾹 눌러주세요', en: 'PRESS & HOLD' };
 
-  let state = 0, sim = null, p = 0, holding = false, down = null, raf = 0, lockUntil = 0;
+  let state = 0, sim = null, p = 0, holding = false, down = null, raf = 0, lockUntil = 0, lit = 0;
   let hintT = 0, left = RESET_S, orient = 'p', wakeLock = null;
 
   const today = () => {
@@ -542,7 +538,6 @@ button,select{font:inherit;color:inherit}
       hiss(t, dur, 0.07, 'bandpass', 700, 1.3, 3400); osc('sine', 1100, t, dur, 0.022, 2500);
     }),
   };
-  const holdMs = () => { const n = days(); return n > 0 ? Math.max(MIN_HOLD, n * COUNT_STEP) : HOLD_MS; };
 
   function setPrompt(ko, en) {
     if (pko.textContent === ko && pen.textContent === en) return;
@@ -550,20 +545,24 @@ button,select{font:inherit;color:inherit}
     for (const el of [pko, pen]) { el.classList.remove('in'); void el.offsetWidth; el.classList.add('in'); }
   }
 
-  /* the screen is a pure function of state: 0 waiting, 1 and 2 after a touch, 3 revealed */
+  /* the screen is a pure function of state (0 waiting, 3 revealed) and of how far the hold has got */
+  const litAt = (v) => (v >= 1 ? 3 : Math.min(2, Math.floor(v * 3 + 1e-6)));   // one light per third of the hold; the third comes with the reveal
+  function showLit(n) {
+    lit = n;
+    steps.forEach((el, i) => el.classList.toggle('on', i < n));
+    photos.forEach((el, i) => el.classList.toggle('on', i === n));
+  }
   function render() {
-    const c = COPY[Math.min(state, 2)];
-    statusEl.textContent = state === 0 ? c.s : '';
-    if (state < 3 && !held()) setPrompt(c.ko, c.en);
-    steps.forEach((el, i) => el.classList.toggle('on', i < state));
-    photos.forEach((el, i) => el.classList.toggle('on', i === state));
+    statusEl.textContent = state === 0 ? COPY.s : '';
+    if (state === 0 && !held()) setPrompt(COPY.ko, COPY.en);
+    showLit(state === 3 ? 3 : litAt(p));
     stage.dataset.state = String(state);
     stage.dataset.count = days() > 0 ? '1' : '0';
     autoNum.textContent = String(left);
   }
   const setState = (n) => { state = n; render(); };
 
-  /* the big D-number while the third touch charges */
+  /* the big D-number in the last third of the hold */
   let shown = -1;
   function showCount(k) {
     if (k === shown) return;
@@ -576,9 +575,18 @@ button,select{font:inherit;color:inherit}
   function paint(v) {
     prog.style.strokeDashoffset = String(100 * (1 - v));
     stage.style.setProperty('--charge', v.toFixed(3));
-    const n = days();
-    /* n, n-1 ... 1 spread evenly over the hold; the reveal fires the moment it fills, no D-DAY pause */
-    if (n > 0) showCount(Math.min(n, Math.max(1, n - Math.floor(v * n))));
+    steps.forEach((el, i) => el.style.setProperty('--f', Math.max(0, Math.min(1, v * 3 - i)).toFixed(3)));   // each bar fills over its third
+    if (state !== 3) {
+      const n = litAt(v);
+      if (n !== lit) {
+        if (holding && n > lit && n < 3) { buzz(14); sfx.tap(n + 1); }   // a deeper thud as each light comes on
+        showLit(n);
+      }
+    }
+    const fin = v >= 2 / 3, d = days();
+    stage.dataset.final = fin ? '1' : '0';
+    /* the last third counts the days down, n ... 1, and the reveal fires the moment it fills: no D-DAY pause */
+    if (d > 0) showCount(fin ? Math.min(d, Math.max(1, d - Math.floor((v * 3 - 2) * d))) : d);
   }
 
   let ctr = { x: 0, y: 0 };
@@ -595,19 +603,19 @@ button,select{font:inherit;color:inherit}
     stage.style.setProperty('--rx', ((r.left + r.width / 2 - t.left) / t.width * 100).toFixed(1) + '%');   // inside the touch band
   }
 
-  /* third touch: press and hold */
+  /* press and hold: 01, 02 and 03 light in turn over HOLD_MS (a re-press during the rewind carries on from there) */
   function startHold() {
     if (holding) return;
     holding = true; cancelAnimationFrame(raf); clearTimeout(hintT);
     setCenter();
-    const dur = holdMs(), t0 = performance.now() - p * dur;
+    const t0 = performance.now() - p * HOLD_MS;
     stage.dataset.hold = '1';
     setPrompt('그대로 눌러주세요', 'HOLD');
     buzz(12);
-    sfx.tap(3);
+    sfx.tap(1);
     const step = (now) => {
       if (!holding) return;
-      p = Math.max(0, Math.min(1, (now - t0) / dur));
+      p = Math.max(0, Math.min(1, (now - t0) / HOLD_MS));
       paint(p);
       if (p >= 1) { complete(); return; }
       raf = requestAnimationFrame(step);
@@ -615,15 +623,17 @@ button,select{font:inherit;color:inherit}
     raf = requestAnimationFrame(step);
   }
 
+  /* let go too early: everything winds back to the start; a quick tap is told how it works */
   function cancelHold() {
     if (!holding) return;
     holding = false; cancelAnimationFrame(raf);
-    setPrompt('끝까지 눌러주세요', 'KEEP HOLDING');
+    const quick = p < 0.15;
+    setPrompt(quick ? COPY.ko : '끝까지 눌러주세요', quick ? COPY.en : 'KEEP HOLDING');
+    if (quick) { ringwrap.classList.remove('nudge'); void ringwrap.offsetWidth; ringwrap.classList.add('nudge'); }
     let last = performance.now();
-    const dur = holdMs();
     const back = (now) => {
       if (holding) return;
-      p = Math.max(0, p - (now - last) / (dur * 0.35)); last = now;
+      p = Math.max(0, p - (now - last) / (HOLD_MS * 0.25)); last = now;
       paint(p);
       if (p > 0) raf = requestAnimationFrame(back);
       else { stage.dataset.hold = '0'; hintT = setTimeout(render, 1600); }
@@ -634,10 +644,11 @@ button,select{font:inherit;color:inherit}
   function complete() {
     holding = false; cancelAnimationFrame(raf); clearTimeout(hintT);
     lockUntil = performance.now() + 1300;
+    p = 1; paint(1);
     const n = days();
     chipB.textContent = n > 0 ? 'D-' + n : n === 0 ? 'D-DAY' : '적용 중';
     if (!reduce) { flash.classList.remove('go'); void flash.offsetWidth; flash.classList.add('go'); }
-    stage.dataset.hold = '0';
+    stage.dataset.hold = '0'; stage.dataset.final = '0';
     setState(3);
     fxShow();
     buzz([35, 45, 80]);
@@ -650,18 +661,12 @@ button,select{font:inherit;color:inherit}
     down = id; wake();
     left = RESET_S; autoNum.textContent = String(left);
     stage.classList.add('pressed');
-    if (state === 2) startHold();
+    startHold();
   }
-  function release(id, cancelled) {
+  function release(id) {
     if (down !== id) return;
     down = null; stage.classList.remove('pressed');
-    if (state === 2) { cancelHold(); return; }
-    if (state < 2 && !cancelled && performance.now() >= lockUntil) {
-      setState(state + 1);
-      buzz(18);
-      sfx.tap(state);
-      lockUntil = performance.now() + 250;
-    }
+    cancelHold();
   }
 
   function reset() {
@@ -670,7 +675,7 @@ button,select{font:inherit;color:inherit}
     cancelAnimationFrame(raf); clearTimeout(hintT);
     stage.dataset.hold = '0'; flash.classList.remove('go'); stage.classList.remove('pressed');
     fxClear();
-    paint(0);
+    state = 0; paint(0);
     left = RESET_S;
     setState(0);
     void stage.offsetWidth;
@@ -679,8 +684,7 @@ button,select{font:inherit;color:inherit}
 
   function goTo(n) {
     reset();
-    if (n === 1 || n === 2) setState(n);
-    if (n === 3) { setState(2); setTimeout(() => { if (state === 2) complete(); }, 80); }
+    if (n === 3) setTimeout(() => { if (state === 0 && !holding) complete(); }, 80);
   }
 
   function tickSecond() {
@@ -956,9 +960,16 @@ button,select{font:inherit;color:inherit}
   syncSound();
 
   stage.addEventListener('pointerdown', (e) => { if (e.button > 0) return; press(e.pointerId); });
-  addEventListener('pointerup', (e) => release(e.pointerId, false));
-  addEventListener('pointercancel', (e) => release(e.pointerId, true));
+  addEventListener('pointerup', (e) => release(e.pointerId));
+  addEventListener('pointercancel', (e) => release(e.pointerId));
   stage.addEventListener('contextmenu', (e) => e.preventDefault());
+  /* iPad Safari zooms the page on a quick double tap or a pinch; a touch screen like this one should never move.
+     (touch-action: manipulation in the CSS covers most of it; this also stops the second tap and the pinch gesture.) */
+  const vp = document.querySelector('meta[name="viewport"]');
+  if (vp && !/user-scalable/.test(vp.content)) vp.content += ', maximum-scale=1, user-scalable=no';
+  let lastTouchEnd = -1e9;
+  document.addEventListener('touchend', (e) => { if (e.timeStamp - lastTouchEnd < 400 && e.cancelable) e.preventDefault(); lastTouchEnd = e.timeStamp; }, { passive: false });
+  for (const t of ['gesturestart', 'gesturechange', 'dblclick']) document.addEventListener(t, (e) => e.preventDefault(), { passive: false });
   /* reset button: its own tap, never counted as a touch on the stage */
   backBtn.addEventListener('pointerdown', (e) => e.stopPropagation());
   backBtn.addEventListener('click', () => { sfx.tap(0); reset(); backBtn.blur(); });
@@ -967,7 +978,7 @@ button,select{font:inherit;color:inherit}
       e.preventDefault(); press('k');
     }
   });
-  addEventListener('keyup', (e) => { if (e.key === ' ' || e.key === 'Enter') release('k', false); });
+  addEventListener('keyup', (e) => { if (e.key === ' ' || e.key === 'Enter') release('k'); });
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && state > 0) wake(); });
 
   if (!matchMedia('(hover: hover) and (pointer: fine)').matches) app.classList.remove('framed');
