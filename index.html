@@ -377,7 +377,7 @@ button,select{font:inherit;color:inherit}
       </div>
     </section>
     <p>iPad로 열면 화면 전체로 보여요. 시연 전에 이 패널은 닫아두세요.</p>
-    <p class="ver">앱 버전 29 · 빌드 bd328169</p>
+    <p class="ver">앱 버전 30 · 빌드 6cb6d105</p>
   </aside>
 </main>
 <script>
@@ -784,13 +784,15 @@ button,select{font:inherit;color:inherit}
   const TAU = Math.PI * 2;
   const rnd = (a, b) => a + Math.random() * (b - a);
   const pick = (a) => a[(Math.random() * a.length) | 0];
-  const PAL = [                           // brand colours only: navy, sky, lime
+  const PAL = [                           // brand navy, sky, lime plus gold and pink (no violet)
     ['#034a68', '#06607f', '#0a8fb0'],   // navy
     ['#0a8fb0', '#3fb6d3', '#78d3ea'],   // sky
     ['#8fb800', '#aed200', '#c9ef3d'],   // lime
+    ['#ffb400', '#ff7a1a', '#ffe08a'],   // gold
+    ['#ff3d81', '#ff7aa8', '#ffc2d6'],   // pink
   ];
-  const CONF = ['#034a68', '#0a8fb0', '#aed200', '#d4fb6a', '#ffffff'];
-  const TRAIL = ['#ffffff', '#e8ff8a', '#d4fb6a'];
+  const CONF = ['#034a68', '#0a8fb0', '#aed200', '#d4fb6a', '#ffb400', '#ff3d81', '#ffffff'];
+  const TRAIL = ['#ffb400', '#ffd35c', '#ffffff'];   // gold sparks with a little white
   let FW = 0, FH = 0, UN = 1, DPR = 1, parts = [], fxTimers = [], fxRaf = 0, fxLast = 0, fxBusy = false, fxLoud = false;   // fxLoud: the opening salvo has sound, the calm idle fireworks do not
 
   function fxSize() {
