@@ -165,13 +165,13 @@ button,select{font:inherit;color:inherit}
 .auto b{font-weight:600;font-variant-numeric:tabular-nums}
 .stage[data-state="0"] .auto{visibility:hidden}
 
-/* D-day countdown once the three bars are full: centred on the whole screen */
+/* D-day countdown once the three bars are full: centred on the whole screen, in the face of the 11.1 date (italic black with the lime offset), white on the dark backing */
 .dcount{position:absolute;inset:0;z-index:4;pointer-events:none;display:grid;place-content:center;justify-items:center;text-align:center;opacity:0;transform:scale(.94);transition:opacity .2s,transform .3s cubic-bezier(.2,.8,.2,1);font-family:var(--font-en)}
 .dcount::before{content:"";position:absolute;inset:0;background:radial-gradient(70% calc(var(--u)*25) at 50% 50%,rgba(1,32,50,.88),rgba(1,32,50,.62) 55%,rgba(1,32,50,0) 100%)}
 .dcount>*{position:relative;margin:0}
-.dd{display:flex;align-items:baseline;font-size:calc(var(--u)*26);font-weight:800;line-height:1;letter-spacing:-.02em;color:#fff;font-variant-numeric:tabular-nums;text-shadow:0 calc(var(--u)*.3) calc(var(--u)*1.6) rgba(0,0,0,.35)}
-.dd i{font-style:normal;color:var(--glow)}
-.dd b{font-weight:800}
+.dd{display:flex;align-items:baseline;font:italic 900 calc(var(--u)*30)/.84 var(--font-en);letter-spacing:-.045em;color:#fff;font-variant-numeric:tabular-nums;text-shadow:-.04em .04em 0 var(--lime),0 calc(var(--u)*.6) calc(var(--u)*2.4) rgba(0,20,30,.45)}
+.dd i{font-style:italic;color:inherit}
+.dd b{font-weight:900}
 .dd b.tick{animation:tick .06s ease-out}
 .stage[data-hold="1"][data-count="1"][data-final="1"] .dcount{opacity:1;transform:none}
 
@@ -377,7 +377,7 @@ button,select{font:inherit;color:inherit}
       </div>
     </section>
     <p>iPad로 열면 화면 전체로 보여요. 시연 전에 이 패널은 닫아두세요.</p>
-    <p class="ver">앱 버전 30 · 빌드 6cb6d105</p>
+    <p class="ver">앱 버전 31 · 빌드 d86ad983</p>
   </aside>
 </main>
 <script>
