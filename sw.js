@@ -1,6 +1,6 @@
 /* PAOLA-1 touch screen: keeps the page, photos, icons and fonts on the device so it opens without a connection,
    and shows a new version as soon as the device is online. */
-const CACHE = 'paola1v2-d86ad983';
+const CACHE = 'paola1v2-da642c1d';
 const CORE = ['./', 'index.html', 'manifest.webmanifest', 'icon-180.png', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'p1.jpg', 'p2.jpg', 'p3.jpg', 'p4.jpg', 'pretendard-subset.woff2'];
 const FONT_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com'];
 const PAGE_WAIT = 2500;   // ms to wait for the newest page before opening the saved one

@@ -140,9 +140,9 @@ button,select{font:inherit;color:inherit}
 /* C. step bar, across the top: a slim utility row (auto reset + the reset button), then 01 / 02 / 03 numerals with their titles centred above the bars, soft grey until their light is on, then navy (the numeral with a lime shadow) */
 .steps{grid-area:1/1;position:relative;z-index:2;min-height:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:auto 1fr;column-gap:calc(var(--u)*4);padding:0 calc(var(--u)*6.2) calc(var(--u)*1.5);background:var(--paper);color:var(--ink)}
 .step{grid-row:2;display:grid;grid-template-rows:1fr auto auto 1fr calc(var(--u)*2.3);min-width:0;padding-top:calc(var(--u)*1.3);color:#5f716b}
-.step .n{grid-row:2;position:relative;justify-self:start;isolation:isolate;font:italic 900 calc(var(--u)*6)/.84 var(--font-en);letter-spacing:-.04em;color:#c5d0c9;transition:color .5s}
-.step .n::before{content:attr(data-n);position:absolute;left:-.045em;top:.045em;z-index:-1;color:var(--lime);opacity:0;transition:opacity .5s}
-.step .t{grid-row:3;margin-top:calc(var(--u)*1);font-family:var(--font-ko);font-weight:800;font-size:calc(var(--u)*4.4);line-height:1.15;letter-spacing:-.02em;white-space:nowrap;color:#93a49d;transition:color .5s}
+.step .n{grid-row:2;position:relative;justify-self:start;isolation:isolate;font:italic 900 calc(var(--u)*6)/.84 var(--font-en);letter-spacing:-.04em;color:#c5d0c9;transition:color .2s}
+.step .n::before{content:attr(data-n);position:absolute;left:-.045em;top:.045em;z-index:-1;color:var(--lime);opacity:0;transition:opacity .2s}
+.step .t{grid-row:3;margin-top:calc(var(--u)*1);font-family:var(--font-ko);font-weight:800;font-size:calc(var(--u)*4.4);line-height:1.15;letter-spacing:-.02em;white-space:nowrap;color:#93a49d;transition:color .2s}
 .step .bar{grid-row:5;align-self:end;display:block;position:relative;height:calc(var(--u)*1.2);border-radius:calc(var(--u)*.6);background:#e4eadf}
 /* the bars fill while the screen is held (--f, 0..1, from the hold), in the bright, glinting lime of the first screen */
 .step .fill{position:absolute;left:0;top:0;bottom:0;width:calc(var(--f,0)*100%);opacity:min(1,calc(var(--f,0)*30));overflow:hidden;border-radius:inherit;background:linear-gradient(90deg,#b9dc12,var(--glow) 55%,#efff96);box-shadow:0 0 calc(var(--u)*.6) rgba(212,251,106,.55)}
@@ -311,7 +311,7 @@ button,select{font:inherit;color:inherit}
         <div class="step" data-i="3"><b class="n" data-n="03">03</b><span class="t">급여</span><i class="bar"><i class="fill"></i></i></div>
         <p class="auto">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="#a9b8a0" stroke-width="2"/><circle cx="12" cy="12" r="4.2" fill="#9db08f"/></svg>
-          <span>자동 초기화 <b id="autoNum">10</b> 초</span>
+          <span>자동 초기화 <b id="autoNum">8</b> 초</span>
         </p>
       </nav>
 
@@ -377,7 +377,7 @@ button,select{font:inherit;color:inherit}
       </div>
     </section>
     <p>iPad로 열면 화면 전체로 보여요. 시연 전에 이 패널은 닫아두세요.</p>
-    <p class="ver">앱 버전 31 · 빌드 d86ad983</p>
+    <p class="ver">앱 버전 32 · 빌드 da642c1d</p>
   </aside>
 </main>
 <script>
@@ -393,10 +393,10 @@ button,select{font:inherit;color:inherit}
   const steps = [...document.querySelectorAll('.step')];
   const photos = [...document.querySelectorAll('.ph')];
 
-  const HOLD_MS = 2000;                    // press and hold until the three bars are full (about 0.67 s each)
+  const HOLD_MS = 1800;                    // press and hold until the three bars are full (0.6 s each)
   const COUNT_MS = 1000;                   // then the days count down by themselves over this long, whatever the number of days
   const RISE_MS = 250;                     // how long before a bar is full its filling sound starts
-  const RESET_S = 10;                      // seconds the reveal stays up before the screen resets by itself
+  const RESET_S = 8;                       // seconds the reveal stays up before the screen resets by itself
   const TARGET = new Date(2026, 10, 1);    // 11월 1일 급여
   const BASE = new Date(2026, 9, 23);      // the screen counts as 10/23 (D-9) until the real date gets there
   const PHOTO_DREAM = 912;                 // row of the photo where the baked "DREAM" ends
@@ -405,7 +405,7 @@ button,select{font:inherit;color:inherit}
 
   const COPY = '꾹 눌러주세요';
 
-  let state = 0, sim = null, p = 0, holding = false, counting = false, down = null, raf = 0, lockUntil = 0, lit = 0, rose = [false, false, false];
+  let state = 0, sim = null, p = 0, holding = false, counting = false, down = null, raf = 0, lockUntil = 0, lit = 0, on = 0, rose = [false, false, false];
   let hintT = 0, left = RESET_S, orient = 'p', wakeLock = null;
 
   const today = () => {
@@ -536,15 +536,16 @@ button,select{font:inherit;color:inherit}
   }
 
   /* the screen is a pure function of state (0 waiting, 3 revealed) and of how far the hold has got */
-  const litAt = (v) => Math.min(3, Math.floor(v * 3 + 1e-6));   // a light for each full bar
-  function showLit(n) {
-    lit = n;
-    steps.forEach((el, i) => el.classList.toggle('on', i < n));
+  const litAt = (v) => Math.min(3, Math.floor(v * 3 + 1e-6));             // full bars: the photos and the bar notes follow these
+  const onAt = (v) => (v > 0 || holding ? Math.min(3, litAt(v) + 1) : 0);   // a step lights the moment its bar starts filling: 01 at the press itself
+  function showLit(n, s) {
+    lit = n; on = s;
+    steps.forEach((el, i) => el.classList.toggle('on', i < s));
     photos.forEach((el, i) => el.classList.toggle('on', i === (state === 3 ? 3 : Math.min(n, 2))));   // the last photo comes with the reveal
   }
   function render() {
     if (state === 0 && !held()) setPrompt(COPY);
-    showLit(state === 3 ? 3 : litAt(p));
+    showLit(state === 3 ? 3 : litAt(p), state === 3 ? 3 : onAt(p));
     stage.dataset.state = String(state);
     stage.dataset.count = days() > 0 ? '1' : '0';
     autoNum.textContent = String(left);
@@ -572,11 +573,9 @@ button,select{font:inherit;color:inherit}
         if (f < from) rose[i] = false;                     // wound back below the start of its rise: it may play again
         else if (holding && !rose[i] && f < 1) { rose[i] = true; sfx.rise(i + 1, (1 - f) * per / 1000); }
       }
-      const n = litAt(v);
-      if (n !== lit) {
-        if (holding && n > lit) { buzz(14); sfx.filled(n); }   // the bar is full: its note
-        showLit(n);
-      }
+      const n = litAt(v), s = onAt(v);
+      if (holding && n > lit) { buzz(14); sfx.filled(n); }   // the bar is full: its note
+      if (n !== lit || s !== on) showLit(n, s);
     }
   }
 
@@ -602,6 +601,7 @@ button,select{font:inherit;color:inherit}
     const t0 = performance.now() - p * HOLD_MS;
     stage.dataset.hold = '1';
     setPrompt('그대로 눌러주세요');
+    paint(p);                                              // 01 lights with the press itself, not when its bar is full
     buzz(12);                                              // no sound on the press itself: the first sound is bar 1 filling
     const step = (now) => {
       if (!holding) return;
