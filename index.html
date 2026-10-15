@@ -377,7 +377,7 @@ button,select{font:inherit;color:inherit}
       </div>
     </section>
     <p>iPad로 열면 화면 전체로 보여요. 시연 전에 이 패널은 닫아두세요.</p>
-    <p class="ver">앱 버전 32 · 빌드 da642c1d</p>
+    <p class="ver">앱 버전 33 · 빌드 cd79a30c</p>
   </aside>
 </main>
 <script>
@@ -417,8 +417,8 @@ button,select{font:inherit;color:inherit}
   /* a short buzz where the device can vibrate (Android phones); iPad has no vibration motor, so nothing happens there */
   const buzz = (pattern) => { try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) { /* not supported */ } };
 
-  /* sound for iPad, which cannot vibrate: while the screen is held each bar fills with a rising rush of air that lands on
-     a clear note the moment it is full (C, E, G: three sounds for the three bars, none on the press itself), then a count
+  /* sound for iPad, which cannot vibrate: each step lights with a clear note (C, E, G, left to right: 01 with the press itself,
+     02 and 03 as their bars start), each bar fills with a rising rush of air that lands on the next note, then a count
      that climbs a scale over a low pulse swelling like a drum roll, then a low C landing under a bright glockenspiel chime
      and fireworks (crack, boom, crackle) on the reveal. All synthesised with Web Audio:
      no files, works offline. iPad plays sound once the screen has been touched, and its mute setting still applies. */
@@ -567,14 +567,14 @@ button,select{font:inherit;color:inherit}
     stage.style.setProperty('--charge', v.toFixed(3));
     steps.forEach((el, i) => el.style.setProperty('--f', Math.max(0, Math.min(1, v * 3 - i)).toFixed(3)));   // each bar fills over its third
     if (state !== 3) {
-      const per = HOLD_MS / 3, from = 1 - RISE_MS / per;  // each bar starts its rise RISE_MS before it is full, so the note lands right on it
+      const per = HOLD_MS / 3, from = 1 - RISE_MS / per;  // each bar starts its rise RISE_MS before it is full, so the air lands right on the next step's note
       for (let i = 0; i < 3; i++) {
         const f = v * 3 - i;
         if (f < from) rose[i] = false;                     // wound back below the start of its rise: it may play again
-        else if (holding && !rose[i] && f < 1) { rose[i] = true; sfx.rise(i + 1, (1 - f) * per / 1000); }
+        else if (holding && !rose[i] && f < 1) { rose[i] = true; sfx.rise(i + 2, (1 - f) * per / 1000); }
       }
       const n = litAt(v), s = onAt(v);
-      if (holding && n > lit) { buzz(14); sfx.filled(n); }   // the bar is full: its note
+      if (holding && s > on) { buzz(14); sfx.filled(s); }   // a step lights: its note (01 with the press, 02 and 03 as their bars start)
       if (n !== lit || s !== on) showLit(n, s);
     }
   }
@@ -601,12 +601,13 @@ button,select{font:inherit;color:inherit}
     const t0 = performance.now() - p * HOLD_MS;
     stage.dataset.hold = '1';
     setPrompt('그대로 눌러주세요');
-    paint(p);                                              // 01 lights with the press itself, not when its bar is full
-    buzz(12);                                              // no sound on the press itself: the first sound is bar 1 filling
+    buzz(12);
+    paint(p);                                              // 01 lights with the press itself, with its note
     const step = (now) => {
       if (!holding) return;
       p = Math.max(0, Math.min(1, (now - t0) / HOLD_MS));
       paint(p);
+      if (on === 3) setPrompt('');                         // 03 is lit: the finger may come off now, so no more "keep holding"
       if (p >= 1) { startCount(); return; }
       raf = requestAnimationFrame(step);
     };
@@ -632,9 +633,10 @@ button,select{font:inherit;color:inherit}
     raf = requestAnimationFrame(run);
   }
 
-  /* let go too early: everything winds back to the start; a quick tap is told how it works */
+  /* let go before 03 lights: everything winds back to the start; a quick tap is told how it works */
   function cancelHold() {
     if (!holding) return;
+    if (on === 3) return;                                  // 03 is lit: letting go is fine, the last bar fills by itself and the count follows
     holding = false; cancelAnimationFrame(raf);
     sfx.hush();
     for (let i = 0; i < 3; i++) if (p * 3 - i < 1) rose[i] = false;   // a re-press plays the rise of the unfinished bar again
