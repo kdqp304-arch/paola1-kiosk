@@ -221,6 +221,10 @@ button,select{font:inherit;color:inherit}
 .stage[data-o="l"] .doc{top:calc(var(--u)*1.5);height:calc(100% - var(--u)*3)}
 .stage[data-o="l"] .doc-nav{left:auto;right:calc(var(--u)*3);bottom:calc(var(--u)*3);max-width:calc(var(--u)*20);flex-direction:column;align-items:flex-end;gap:calc(var(--u)*1.2);font-size:calc(var(--u)*2.2);text-align:right}
 .stage[data-o="l"] #docHint{display:block}
+/* page 2 is a wide page: in landscape it keeps the top row for the back button and a one-line hint below, like portrait */
+.stage[data-o="l"] .doc:nth-of-type(2){top:calc(var(--u)*8);height:calc(100% - var(--u)*15.5)}
+.stage[data-o="l"] .docs[data-page="2"] .doc-nav{left:0;right:0;bottom:calc(var(--u)*2.2);max-width:none;flex-direction:row;align-items:center;gap:calc(var(--u)*1.6);font-size:calc(var(--u)*2.4);text-align:center}
+.stage[data-o="l"] .docs[data-page="2"] #docHint{display:inline}
 .back{position:absolute;z-index:8;top:calc(var(--u)*.85);right:calc(var(--u)*2.8);display:inline-flex;align-items:center;gap:calc(var(--u)*1);height:calc(var(--u)*5.2);padding:0 calc(var(--u)*2.4) 0 calc(var(--u)*1.8);border-radius:999px;border:calc(var(--u)*.3) solid var(--ink);background:#fff;color:var(--ink);font:600 calc(var(--u)*2.4)/1 var(--font-ko);letter-spacing:-.01em;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .back::after{content:"";position:absolute;inset:calc(var(--u)*-1.2) calc(var(--u)*-1.6)}
 .back svg{width:calc(var(--u)*2.9);height:calc(var(--u)*2.9);flex:none}
@@ -341,7 +345,7 @@ button,select{font:inherit;color:inherit}
       <canvas class="fx" id="fx" aria-hidden="true"></canvas>
       <section class="docs" id="docs" data-page="1" hidden aria-label="공고문 2쪽: 화면을 누르면 페이지가 넘어가요">
         <img class="doc on" alt="건강보험심사평가원 공고 제2026-232호(2026.11.1. 시행) 안내. 신설: 난소암, 난관암, 일차복막암에 Olaparib(tablet) + Bevacizumab 병용요법(유지요법)" draggable="false" src="doc1.png">
-        <img class="doc" alt="공고개정 내역 신설. 10. 난소암/난관암/일차복막암 유지요법: olaparib(tablet) + bevacizumab, 투여대상과 인정기준" draggable="false" src="doc2.jpg">
+        <img class="doc" alt="공고개정 내역 신설. 10. 난소암/난관암/일차복막암 4. 유지요법: olaparib(tablet) + bevacizumab, 투여대상과 인정기준, 주3" draggable="false" src="doc2.jpg">
         <p class="doc-nav"><span class="dots" aria-hidden="true"><i></i><i></i></span><span class="hint">화면을 누르면 <span id="docHint">다음 페이지</span></span></p>
       </section>
       <button class="back" id="backBtn" type="button" aria-label="처음 화면으로 돌아가기 (초기화)">
@@ -392,7 +396,7 @@ button,select{font:inherit;color:inherit}
       </div>
     </section>
     <p>iPad로 열면 화면 전체로 보여요. 시연 전에 이 패널은 닫아두세요.</p>
-    <p class="ver">앱 버전 34 · 빌드 51d7d97b</p>
+    <p class="ver">앱 버전 35 · 빌드 1d80b50c</p>
   </aside>
 </main>
 <script>
