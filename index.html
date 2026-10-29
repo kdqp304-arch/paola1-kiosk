@@ -160,10 +160,8 @@ button,select{font:inherit;color:inherit}
 .stage[data-o="l"] .steps{grid-template-columns:repeat(3,minmax(0,1fr));padding-bottom:calc(var(--u)*1.2)}
 .stage[data-o="l"] .auto{height:calc(var(--u)*6.4)}
 .stage[data-o="l"] .back{top:calc(var(--u)*.6)}
-.auto{grid-column:1/-1;grid-row:1;margin:0 calc(var(--u)*-6.2);padding:0 calc(var(--bw,0px) + var(--u)*5.4) 0 calc(var(--u)*6.2);height:calc(var(--u)*6.9);border-bottom:1px solid var(--rule);display:flex;align-items:center;justify-content:flex-end;gap:calc(var(--u)*1.4);font-size:calc(var(--u)*2.4);font-weight:500;letter-spacing:-.01em;line-height:1;color:#667873}
-.auto svg{width:calc(var(--u)*3);height:calc(var(--u)*3);flex:none}
-.auto b{font-weight:600;font-variant-numeric:tabular-nums}
-.stage[data-state="0"] .auto{visibility:hidden}
+/* the slim top row only makes room for the back button (there is no auto reset) */
+.auto{grid-column:1/-1;grid-row:1;margin:0;height:calc(var(--u)*6.9);visibility:hidden}
 
 /* D-day countdown once the three bars are full: centred on the whole screen, in the face of the 11.1 date (italic black with the lime offset), white on the dark backing */
 .dcount{position:absolute;inset:0;z-index:4;pointer-events:none;display:grid;place-content:center;justify-items:center;text-align:center;opacity:0;transform:scale(.94);transition:opacity .2s,transform .3s cubic-bezier(.2,.8,.2,1);font-family:var(--font-en)}
@@ -208,7 +206,21 @@ button,select{font:inherit;color:inherit}
 .stage[data-state="3"] .chip{animation:rise .6s 1.15s ease both}
 .flash{position:absolute;inset:0;z-index:5;pointer-events:none;opacity:0;background:radial-gradient(circle at var(--cx,28%) var(--cy,50%),#fff 0,var(--flash) 16%,rgba(212,251,106,0) 64%)}
 .flash.go{animation:flash 1s ease-out}
-.fx{position:absolute;inset:0;width:100%;height:100%;z-index:6;pointer-events:none}
+.fx{position:absolute;inset:0;width:100%;height:100%;z-index:6;pointer-events:none;transition:opacity .6s ease-out}
+.fx.out{opacity:0}
+/* F. after the fireworks: the notice, two pages, as large as the screen allows; a tap turns the page (1 -> 2 -> 1) */
+.docs{position:absolute;inset:0;z-index:7;background:#fff;opacity:0;transition:opacity .45s ease;cursor:pointer}
+.docs.on{opacity:1}
+.doc{position:absolute;left:calc(var(--u)*2.5);top:calc(var(--u)*8);width:calc(100% - var(--u)*5);height:calc(100% - var(--u)*15.5);max-width:none;object-fit:contain;opacity:0;transition:opacity .3s ease;-webkit-user-drag:none}
+.doc.on{opacity:1}
+.doc-nav{position:absolute;left:0;right:0;bottom:calc(var(--u)*2.2);margin:0;display:flex;align-items:center;justify-content:center;gap:calc(var(--u)*1.6);font-size:calc(var(--u)*2.4);font-weight:600;line-height:1.3;letter-spacing:-.01em;color:#5f716b;word-break:keep-all}
+.doc-nav .dots{display:inline-flex;flex:none;gap:calc(var(--u)*.9)}
+.doc-nav .dots i{width:calc(var(--u)*1.3);height:calc(var(--u)*1.3);border-radius:50%;background:#c5d0c9;transition:background .3s}
+.docs[data-page="1"] .dots i:nth-child(1),.docs[data-page="2"] .dots i:nth-child(2){background:var(--ink)}
+/* landscape: the pages use the full height; the page dots and the hint sit in the free space at the right */
+.stage[data-o="l"] .doc{top:calc(var(--u)*1.5);height:calc(100% - var(--u)*3)}
+.stage[data-o="l"] .doc-nav{left:auto;right:calc(var(--u)*3);bottom:calc(var(--u)*3);max-width:calc(var(--u)*20);flex-direction:column;align-items:flex-end;gap:calc(var(--u)*1.2);font-size:calc(var(--u)*2.2);text-align:right}
+.stage[data-o="l"] #docHint{display:block}
 .back{position:absolute;z-index:8;top:calc(var(--u)*.85);right:calc(var(--u)*2.8);display:inline-flex;align-items:center;gap:calc(var(--u)*1);height:calc(var(--u)*5.2);padding:0 calc(var(--u)*2.4) 0 calc(var(--u)*1.8);border-radius:999px;border:calc(var(--u)*.3) solid var(--ink);background:#fff;color:var(--ink);font:600 calc(var(--u)*2.4)/1 var(--font-ko);letter-spacing:-.01em;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .back::after{content:"";position:absolute;inset:calc(var(--u)*-1.2) calc(var(--u)*-1.6)}
 .back svg{width:calc(var(--u)*2.9);height:calc(var(--u)*2.9);flex:none}
@@ -309,10 +321,7 @@ button,select{font:inherit;color:inherit}
         <div class="step" data-i="1"><b class="n" data-n="01">01</b><span class="t">HRD+</span><i class="bar"><i class="fill"></i></i></div>
         <div class="step" data-i="2"><b class="n" data-n="02">02</b><span class="t">PAOLA-1</span><i class="bar"><i class="fill"></i></i></div>
         <div class="step" data-i="3"><b class="n" data-n="03">03</b><span class="t">급여</span><i class="bar"><i class="fill"></i></i></div>
-        <p class="auto">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="#a9b8a0" stroke-width="2"/><circle cx="12" cy="12" r="4.2" fill="#9db08f"/></svg>
-          <span>자동 초기화 <b id="autoNum">8</b> 초</span>
-        </p>
+        <p class="auto" aria-hidden="true"></p>
       </nav>
 
       <section class="light" id="light" aria-label="11월 1일 급여">
@@ -330,6 +339,11 @@ button,select{font:inherit;color:inherit}
       </div>
       <div class="flash" id="flash" aria-hidden="true"></div>
       <canvas class="fx" id="fx" aria-hidden="true"></canvas>
+      <section class="docs" id="docs" data-page="1" hidden aria-label="공고문 2쪽: 화면을 누르면 페이지가 넘어가요">
+        <img class="doc on" alt="건강보험심사평가원 공고 제2026-232호(2026.11.1. 시행) 안내. 신설: 난소암, 난관암, 일차복막암에 Olaparib(tablet) + Bevacizumab 병용요법(유지요법)" draggable="false" src="doc1.png">
+        <img class="doc" alt="공고개정 내역 신설. 10. 난소암/난관암/일차복막암 유지요법: olaparib(tablet) + bevacizumab, 투여대상과 인정기준" draggable="false" src="doc2.jpg">
+        <p class="doc-nav"><span class="dots" aria-hidden="true"><i></i><i></i></span><span class="hint">화면을 누르면 <span id="docHint">다음 페이지</span></span></p>
+      </section>
       <button class="back" id="backBtn" type="button" aria-label="처음 화면으로 돌아가기 (초기화)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
         <span>처음으로</span>
@@ -346,6 +360,7 @@ button,select{font:inherit;color:inherit}
       <div class="row">
         <button class="tb" type="button" data-go="0">대기</button>
         <button class="tb" type="button" data-go="3">공개</button>
+        <button class="tb" type="button" data-go="4">공고문</button>
       </div>
     </section>
     <section>
@@ -377,7 +392,7 @@ button,select{font:inherit;color:inherit}
       </div>
     </section>
     <p>iPad로 열면 화면 전체로 보여요. 시연 전에 이 패널은 닫아두세요.</p>
-    <p class="ver">앱 버전 33 · 빌드 cd79a30c</p>
+    <p class="ver">앱 버전 34 · 빌드 51d7d97b</p>
   </aside>
 </main>
 <script>
@@ -387,16 +402,18 @@ button,select{font:inherit;color:inherit}
   const app = $('#app'), frame = $('#frame'), stage = $('#stage'), visual = $('#visual');
   const pko = $('#pko');
   const prog = $('#prog'), dnum = $('#dnum'), ringwrap = $('#ringwrap'), flash = $('#flash');
-  const autoNum = $('#autoNum'), chipB = $('#chipB'), backBtn = $('#backBtn');
+  const chipB = $('#chipB'), backBtn = $('#backBtn');
   const lightEl = $('#light'), touchEl = $('#touch');
+  const docs = $('#docs'), docImgs = [...document.querySelectorAll('.doc')], docHint = $('#docHint');
   const legalEl = $('.legal');
   const steps = [...document.querySelectorAll('.step')];
   const photos = [...document.querySelectorAll('.ph')];
 
-  const HOLD_MS = 1800;                    // press and hold until the three bars are full (0.6 s each)
+  const HOLD_MS = 1200;                    // press and hold until the three bars are full (0.4 s each; the finger may come off once 03 lights)
   const COUNT_MS = 1000;                   // then the days count down by themselves over this long, whatever the number of days
   const RISE_MS = 250;                     // how long before a bar is full its filling sound starts
-  const RESET_S = 8;                       // seconds the reveal stays up before the screen resets by itself
+  const FX_MS = 3000;                      // the fireworks last this long, then the notice (two pages) comes up and stays until the back button is pressed
+  const QUICK_MS = 300;                    // a press shorter than this is a tap: it gets the how-to hint
   const TARGET = new Date(2026, 10, 1);    // 11월 1일 급여
   const BASE = new Date(2026, 9, 23);      // the screen counts as 10/23 (D-9) until the real date gets there
   const PHOTO_DREAM = 912;                 // row of the photo where the baked "DREAM" ends
@@ -406,7 +423,7 @@ button,select{font:inherit;color:inherit}
   const COPY = '꾹 눌러주세요';
 
   let state = 0, sim = null, p = 0, holding = false, counting = false, down = null, raf = 0, lockUntil = 0, lit = 0, on = 0, rose = [false, false, false];
-  let hintT = 0, left = RESET_S, orient = 'p', wakeLock = null;
+  let hintT = 0, orient = 'p', wakeLock = null, docT = 0, page = 0, docDown = null;
 
   const today = () => {
     const d = sim || new Date(), t = new Date(d.getFullYear(), d.getMonth(), d.getDate());
@@ -548,7 +565,6 @@ button,select{font:inherit;color:inherit}
     showLit(state === 3 ? 3 : litAt(p), state === 3 ? 3 : onAt(p));
     stage.dataset.state = String(state);
     stage.dataset.count = days() > 0 ? '1' : '0';
-    autoNum.textContent = String(left);
   }
   const setState = (n) => { state = n; render(); };
 
@@ -640,7 +656,7 @@ button,select{font:inherit;color:inherit}
     holding = false; cancelAnimationFrame(raf);
     sfx.hush();
     for (let i = 0; i < 3; i++) if (p * 3 - i < 1) rose[i] = false;   // a re-press plays the rise of the unfinished bar again
-    const quick = p < 0.15;
+    const quick = p * HOLD_MS < QUICK_MS;
     setPrompt(quick ? COPY : '끝까지 눌러주세요');
     if (quick) { ringwrap.classList.remove('nudge'); void ringwrap.offsetWidth; ringwrap.classList.add('nudge'); }
     let last = performance.now();
@@ -665,6 +681,7 @@ button,select{font:inherit;color:inherit}
     stage.dataset.hold = '0'; stage.dataset.final = '0';
     setState(3);
     fxShow();
+    clearTimeout(docT); docT = setTimeout(showDocs, FX_MS);   // the fireworks are over: the notice
     buzz([35, 45, 80]);
     sfx.reveal();
   }
@@ -673,7 +690,6 @@ button,select{font:inherit;color:inherit}
   function press(id) {
     if (state === 3 || counting || down !== null || performance.now() < lockUntil) return;
     down = id; wake();
-    left = RESET_S; autoNum.textContent = String(left);
     stage.classList.add('pressed');
     startHold();
   }
@@ -689,10 +705,9 @@ button,select{font:inherit;color:inherit}
     sfx.hush();
     cancelAnimationFrame(raf); clearTimeout(hintT);
     stage.dataset.hold = '0'; stage.dataset.final = '0'; flash.classList.remove('go'); stage.classList.remove('pressed');
-    fxClear();
+    fxClear(); hideDocs();
     state = 0; paint(0);
     if (days() > 0) showCount(days());
-    left = RESET_S;
     setState(0);
     void stage.offsetWidth;
     requestAnimationFrame(() => stage.classList.remove('snap'));
@@ -700,14 +715,30 @@ button,select{font:inherit;color:inherit}
 
   function goTo(n) {
     reset();
-    if (n === 3) setTimeout(() => { if (state === 0 && !holding && !counting) complete(true); }, 80);
+    if (n >= 3) setTimeout(() => {
+      if (state !== 0 || holding || counting) return;
+      complete(true);
+      if (n === 4) { fxClear(); clearTimeout(docT); showDocs(); }   // preview: straight to the notice
+    }, 80);
   }
 
-  function tickSecond() {
-    if (state === 0) { left = RESET_S; return; }
-    left--; autoNum.textContent = String(Math.max(left, 0));
-    if (left <= 0) reset();
+  /* the notice after the fireworks: page 1 first, a tap turns to page 2 and back */
+  function showPage(n) {
+    page = n;
+    docImgs.forEach((el, i) => el.classList.toggle('on', i === n));
+    docs.dataset.page = String(n + 1);
+    docHint.textContent = n === 0 ? '다음 페이지' : '처음 페이지';
   }
+  function showDocs() {
+    if (state !== 3) return;
+    showPage(0);
+    docs.hidden = false; void docs.offsetWidth; docs.classList.add('on');
+  }
+  function hideDocs() {
+    clearTimeout(docT); docT = 0; docDown = null;
+    docs.classList.remove('on'); docs.hidden = true; showPage(0);
+  }
+
 
   async function wake() {
     try {
@@ -763,7 +794,6 @@ button,select{font:inherit;color:inherit}
   }
 
   /* the auto-reset text stops short of the reset button, whatever width the button ends up with */
-  function backW() { stage.style.setProperty('--bw', backBtn.offsetWidth + 'px'); }
 
   /* fit the stage to the viewport (or to a device frame on desktop) */
   function layout() {
@@ -778,7 +808,7 @@ button,select{font:inherit;color:inherit}
     frame.style.width = fw + 'px'; frame.style.height = fh + 'px';
     stage.dataset.o = framed ? orient : (fw >= fh ? 'l' : 'p');
     stage.style.setProperty('--u', (Math.min(fw, fh) / 100).toFixed(3) + 'px');
-    backW(); fitTitles(); setCenter(); cropPhoto(); fitDate(); fxSize();
+    fitTitles(); setCenter(); cropPhoto(); fitDate(); fxSize();
   }
 
   /* fireworks for the reveal: one canvas over the whole stage, painted only while something is in the air */
@@ -795,7 +825,7 @@ button,select{font:inherit;color:inherit}
   ];
   const CONF = ['#034a68', '#0a8fb0', '#aed200', '#d4fb6a', '#ffb400', '#ff3d81', '#ffffff'];
   const TRAIL = ['#ffb400', '#ffd35c', '#ffffff'];   // gold sparks with a little white
-  let FW = 0, FH = 0, UN = 1, DPR = 1, parts = [], fxTimers = [], fxRaf = 0, fxLast = 0, fxBusy = false, fxLoud = false;   // fxLoud: the opening salvo has sound, the calm idle fireworks do not
+  let FW = 0, FH = 0, UN = 1, DPR = 1, parts = [], fxTimers = [], fxRaf = 0, fxLast = 0, fxBusy = false, fxLoud = false;   // fxLoud: the show has sound (pops and whooshes)
 
   function fxSize() {
     FW = stage.clientWidth; FH = stage.clientHeight; UN = Math.min(FW, FH) / 100;
@@ -836,7 +866,7 @@ button,select{font:inherit;color:inherit}
   }
 
   function piece(x, y, vx, vy) {
-    add({ k: 2, x, y, vx, vy, w: UN * rnd(.9, 1.6), h: UN * rnd(.5, .9), rot: rnd(0, TAU), vr: rnd(-9, 9), ph: rnd(0, TAU), fr: rnd(3, 6), fl: rnd(8, 15), col: pick(CONF), life: rnd(3.5, 5.5), drag: 1.9, gr: UN * 46 });
+    add({ k: 2, x, y, vx, vy, w: UN * rnd(.9, 1.6), h: UN * rnd(.5, .9), rot: rnd(0, TAU), vr: rnd(-9, 9), ph: rnd(0, TAU), fr: rnd(3, 6), fl: rnd(8, 15), col: pick(CONF), life: rnd(1.6, 2.4), drag: 1.9, gr: UN * 46 });
   }
   function cannon(x, y, ang) {
     for (let i = 0; i < 30; i++) { const a = ang + rnd(-.3, .3), sp = UN * rnd(80, 190); piece(x, y, Math.cos(a) * sp, Math.sin(a) * sp); }
@@ -914,24 +944,19 @@ button,select{font:inherit;color:inherit}
     if (parts.length && !fxRaf) fxRaf = requestAnimationFrame(fxFrame);
   }
 
-  /* after the opening salvo the screen calms down to one small rocket every 6.5 to 9 seconds */
-  function idle() {
-    if (state !== 3) return;
-    if (document.visibilityState === 'visible') rocket(FW * rnd(.12, .88), FH * rnd(.14, .5), .9, 64);
-    fxTimers.push(setTimeout(idle, rnd(6500, 9000)));
-  }
-
   function fxShow() {
     if (reduce) return;
     fxClear(); fxSize(); fx.hidden = false; fxLoud = true;
     const at = (ms, fn) => fxTimers.push(setTimeout(fn, ms));
     const dateAt = () => { const d = $('.date').getBoundingClientRect(), s = stage.getBoundingClientRect(); return { x: d.left + d.width / 2 - s.left, y: d.top + d.height / 2 - s.top }; };
+    /* one 3-second show: everything goes up in the first 1.2 s and has burst by about 2 s; the canvas fades out over the last 0.6 s and stops at 3 s */
     burst(ctr.x, ctr.y, 130, PAL.flat(), 1.6);                        // from the ring, with the flash
-    at(150, () => { cannon(FW * .03, FH + UN, -58 * Math.PI / 180); cannon(FW * .97, FH + UN, -122 * Math.PI / 180); });
-    for (let i = 0; i < 8; i++) at(260 + i * 240, rain);               // confetti rain, ~2 s
-    at(330, () => { const c = dateAt(); burst(c.x, c.y, 120, PAL.flat(), 1.4); });   // the date itself goes off
-    for (let i = 0; i < 3; i++) at(420 + i * 700 + rnd(-90, 90), () => rocket(FW * (i % 2 ? rnd(.58, .9) : rnd(.1, .42)), FH * rnd(.1, .55), 1.15, 90));
-    at(4300, () => { fxLoud = false; idle(); });
+    at(120, () => { cannon(FW * .03, FH + UN, -58 * Math.PI / 180); cannon(FW * .97, FH + UN, -122 * Math.PI / 180); });
+    for (let i = 0; i < 6; i++) at(200 + i * 180, rain);               // confetti rain, ~1 s
+    at(300, () => { const c = dateAt(); burst(c.x, c.y, 120, PAL.flat(), 1.4); });   // the date itself goes off
+    for (let i = 0; i < 3; i++) at(250 + i * 420 + rnd(-60, 60), () => rocket(FW * (i % 2 ? rnd(.58, .9) : rnd(.1, .42)), FH * rnd(.1, .55), 1.15, 90));
+    at(FX_MS - 600, () => fx.classList.add('out'));
+    at(FX_MS, fxClear);
   }
 
   function fxClear() {
@@ -940,7 +965,7 @@ button,select{font:inherit;color:inherit}
     cancelAnimationFrame(fxRaf); fxRaf = 0; fxBusy = false; parts = [];
     fx.width = fx.width;                 // drop the whole bitmap: a plain clearRect can be lost when the canvas is hidden right after
     g.setTransform(DPR, 0, 0, DPR, 0, 0);
-    fx.hidden = true;
+    fx.hidden = true; fx.classList.remove('out');
   }
 
   /* preview tools */
@@ -1033,7 +1058,12 @@ button,select{font:inherit;color:inherit}
   /* reset button: its own tap, never counted as a touch on the stage */
   backBtn.addEventListener('pointerdown', (e) => e.stopPropagation());
   backBtn.addEventListener('click', () => { sfx.tap(0); reset(); backBtn.blur(); });
+  docs.addEventListener('pointerdown', (e) => { if (e.button > 0) return; docDown = e.pointerId; });
+  docs.addEventListener('pointerup', (e) => { if (docDown !== e.pointerId) return; docDown = null; if (docs.classList.contains('on')) showPage(page ? 0 : 1); });
   addEventListener('keydown', (e) => {
+    if (docs.classList.contains('on') && [' ', 'Enter', 'ArrowRight', 'ArrowLeft'].includes(e.key) && !e.repeat && !(e.target.closest && e.target.closest('button,select,.tools'))) {
+      e.preventDefault(); showPage(page ? 0 : 1); return;
+    }
     if ((e.key === ' ' || e.key === 'Enter') && !e.repeat && !(e.target.closest && e.target.closest('button,select,.tools'))) {
       e.preventDefault(); press('k');
     }
@@ -1048,9 +1078,8 @@ button,select{font:inherit;color:inherit}
   photos.forEach((img) => { if (img.decode) img.decode().then(cropPhoto, () => {}); });
   if (document.fonts && document.fonts.load) {
     Promise.all(['500 20px Montserrat', '800 20px Montserrat', 'italic 900 40px Montserrat'].map((f) => document.fonts.load(f, '0123456789.')))
-      .then(() => { backW(); fitTitles(); setCenter(); fitDate(); }, () => {});
+      .then(() => { fitTitles(); setCenter(); fitDate(); }, () => {});
   }
-  setInterval(tickSecond, 1000);
 })();
 </script>
 <script>
